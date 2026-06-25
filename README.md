@@ -286,8 +286,25 @@ Content-Type: application/json   (khusus POST/PUT/PATCH)
 | Build gagal / vendor tidak ada | Jalankan `composer install` dulu |
 | Error koneksi MySQL | Pastikan `.env` pakai `DB_HOST=mysql`, bukan `127.0.0.1` |
 | Duplicate entry saat seed | Pakai `migrate:fresh --seed`, bukan `migrate --seed` |
+| `Access denied for user 'sail'` | Volume MySQL masih pakai password lama — lihat solusi di bawah |
 | Swagger "Failed to load API definition" | Pastikan `/api/docs` → HTTP 200, lalu refresh browser |
 | Port 8000 sudah dipakai | Ubah `APP_PORT=8001` di `.env`, lalu `docker compose up -d` |
+
+### Error: `Access denied for user 'sail'`
+
+MySQL di Docker **hanya membuat user & password saat volume pertama kali dibuat**. Jika `.env` diubah setelah container pernah jalan (misalnya setelah `cp .env.example .env`), kredensial di `.env` tidak otomatis sinkron dengan data MySQL yang sudah ada.
+
+**Solusi — reset volume MySQL** (data lokal akan hilang, seed akan mengisi ulang):
+
+```bash
+docker compose down -v
+cp .env.example .env
+docker compose up -d --build
+docker compose exec laravel.test php artisan key:generate
+docker compose exec laravel.test php artisan migrate:fresh --seed
+```
+
+> Pastikan `cp .env.example .env` dijalankan **sebelum** `docker compose up`, agar MySQL terinisialisasi dengan kredensial yang benar dari awal.
 
 ---
 
