@@ -1,173 +1,121 @@
-# Service C - Validasi Prasyarat & Kurikulum 🎓
-**Integrasi Aplikasi Enterprise (IAE) - Tugas Besar**
+# Service C — Validasi Prasyarat & Kurikulum
 
-[![Laravel 12](https://img.shields.io/badge/Laravel-12.0-red?style=flat-square&logo=laravel)](https://laravel.com)
-[![MySQL](https://img.shields.io/badge/Database-MySQL-blue?style=flat-square&logo=mysql)](https://mysql.com)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=flat-square&logo=docker)](https://www.docker.com/)
-[![GraphQL](https://img.shields.io/badge/GraphQL-Lighthouse-e10098?style=flat-square&logo=graphql)](https://lighthouse-php.com/)
+**Integrasi Aplikasi Enterprise (IAE) — Standar IAE-T2**
 
----
-
-## 🧑‍🎓 Identitas Mahasiswa
-- **Nama:** Andi Muh. Arif Darma Saputra M
-- **NIM:** 102022580023
-- **Kelas:** Integrasi Aplikasi Enterprise
-- **Layanan:** Service C (Kurikulum & Nilai Mahasiswa)
+| Item | Detail |
+|---|---|
+| **Nama** | Andi Muh. Arif Darma Saputra M |
+| **NIM** | 102022580023 |
+| **Layanan** | Service C (Kurikulum & Nilai Mahasiswa) |
+| **Port lokal** | `8000` |
+| **X-IAE-KEY** | `102022580023` |
 
 ---
 
-## 🚀 Gambaran Proyek
-Service C adalah komponen dari ekosistem IAE yang bertanggung jawab untuk mengelola data kurikulum program studi dan validasi nilai mahasiswa. Layanan ini dibangun dengan arsitektur modern yang mendukung REST API dan GraphQL secara simultan.
+## Panduan untuk Dosen / Penilai
 
-### Fitur Utama:
-- **RESTful API**: Dokumentasi lengkap menggunakan Swagger (OpenAPI).
-- **GraphQL API**: Query data yang fleksibel menggunakan Lighthouse.
-- **Security**: Proteksi middleware menggunakan header `X-IAE-KEY`.
-- **Integrasi**: Validasi silang ke Service A untuk pengecekan status mahasiswa aktif.
-- **Containerization**: Berjalan sepenuhnya di Docker menggunakan Laravel Sail.
+Ikuti langkah berikut **berurutan** agar service dapat dijalankan dan discan sesuai rubrik IAE-T2.
 
----
+### Prasyarat
 
-## 🛠️ Stack Teknologi
-- **Framework**: Laravel 12.0 (PHP 8.5)
-- **Database**: MySQL 8.4
-- **API Documentation**: L5-Swagger
-- **GraphQL Interface**: Lighthouse GraphQL + GraphiQL IDE
-- **Dockerization**: Laravel Sail
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) sudah **Running**
+- Git terinstall
+- Composer terinstall ([getcomposer.org](https://getcomposer.org/))
+- Port `8000` tidak dipakai aplikasi lain
 
----
+### Langkah 1 — Clone repository
 
-## 📦 Instalasi & Cara Menjalankan
-Pastikan **Docker Desktop** sudah berjalan di komputer Anda, lalu ikuti langkah berikut:
-
-1. **Clone & Masuk ke Direktori Proyek**
-2. **Copy Konfigurasi Environment**
-   ```bash
-   cp .env.example .env
-   ```
-3. **Nyalakan Docker Container**
-   ```bash
-   ./vendor/bin/sail up -d --build
-   ```
-4. **Instalasi Dependencies & Generate Key**
-   ```bash
-   ./vendor/bin/sail composer install
-   ./vendor/bin/sail artisan key:generate
-   ```
-5. **Migrasi Database & Seeding Data**
-   ```bash
-   ./vendor/bin/sail artisan migrate:fresh --seed
-   ```
-
----
-
-## 🔗 Endpoint & Dokumentasi
-
-### 1. REST API (Swagger)
-Akses dokumentasi interaktif untuk mencoba semua endpoint:
-> **URL:** [http://localhost:8000/api/documentation](http://localhost:8000/api/documentation)
-
-### 2. GraphQL (Playground)
-Gunakan GraphiQL untuk melakukan query data kurikulum dan nilai:
-> **URL:** [http://localhost:8000/graphiql](http://localhost:8000/graphiql)
-
-### 3. Keamanan (X-IAE-KEY)
-Setiap request ke API wajib menyertakan header keamanan berikut:
-- **Header Key**: `X-IAE-KEY`
-- **Value**: `102022580023` (NIM Anda)
-
----
-
-## 🧪 Contoh Query GraphQL
-```graphql
-{
-  nilaiByNim(nim: "102022580023") {
-    nim
-    ips
-    data {
-      nama_matkul
-      nilai_huruf
-    }
-  }
-}
+```bash
+git clone https://github.com/IAE-2026/102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM.git
+cd 102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM
 ```
 
----
+### Langkah 2 — Install dependency PHP
 
-## 🧪 Contoh Request & Response
+Wajib dijalankan **sebelum** `docker compose up`, karena image Docker membutuhkan folder `vendor/`.
 
-### 1. Collection (Mengambil Daftar Data)
-**Endpoint:** `GET /api/v1/nilai`  
-**Deskripsi:** Mengambil seluruh daftar nilai mahasiswa yang tersimpan di database.
+```bash
+composer install
+```
 
-**Sample Response:**
+### Langkah 3 — Siapkan file environment
+
+```bash
+cp .env.example .env
+```
+
+File `.env.example` sudah dikonfigurasi untuk **MySQL + Docker**. Pastikan bagian berikut ada:
+
+```env
+APP_URL=http://localhost:8000
+APP_PORT=8000
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=sail
+DB_PASSWORD=password
+
+SERVICE_NAME=Prasyarat-Kurikulum-Service
+IAE_API_NIM=102022580023
+L5_SWAGGER_GENERATE_ALWAYS=true
+L5_SWAGGER_CONST_HOST=http://localhost:8000
+```
+
+### Langkah 4 — Jalankan Docker Compose
+
+```bash
+docker compose up -d --build
+```
+
+Tunggu sampai container `laravel.test` dan `mysql` status **running**:
+
+```bash
+docker compose ps
+```
+
+### Langkah 5 — Generate APP_KEY & setup database
+
+```bash
+docker compose exec laravel.test php artisan key:generate
+docker compose exec laravel.test php artisan migrate:fresh --seed
+```
+
+> Gunakan `migrate:fresh --seed` (bukan `migrate --seed`) agar tidak terjadi error duplicate data.
+
+### Langkah 6 — Verifikasi service hidup
+
+| Cek | URL | Harus |
+|---|---|---|
+| Health | http://localhost:8000/up | HTTP 200 |
+| Swagger UI | http://localhost:8000/api/documentation | Halaman docs tampil |
+| OpenAPI JSON (publik) | http://localhost:8000/docs/openapi.json | JSON valid |
+| OpenAPI JSON (Swagger) | http://localhost:8000/api/docs | JSON valid |
+| GraphQL Playground | http://localhost:8000/graphiql | UI tampil |
+| GraphQL endpoint | http://localhost:8000/graphql | HTTP 200 |
+
+### Langkah 7 — Tes REST API (IAE-T2)
+
+**GET — tanpa key (harus 401):**
+
+```bash
+curl -i http://localhost:8000/api/v1/kurikulum
+```
+
+**GET — dengan X-IAE-KEY (harus 200 + wrapper IAE-T2):**
+
+```bash
+curl -i -H "X-IAE-KEY: 102022580023" http://localhost:8000/api/v1/kurikulum
+```
+
+Response sukses wajib memiliki struktur:
+
 ```json
 {
   "status": "success",
-  "message": "Data nilai berhasil diambil",
-  "data": [
-    {
-      "id": 1,
-      "nim": "102022400136",
-      "kode_matkul": "SI101",
-      "nama_matkul": "Algoritma dan Pemrograman",
-      "nilai_huruf": "A",
-      "nilai_angka": "4.00",
-      "sks": 3,
-      "semester": 1,
-      "tahun_ajaran": "2024/2025",
-      "created_at": "2026-05-14T18:37:11.000000Z",
-      "updated_at": "2026-05-14T18:37:11.000000Z"
-    },
-    {
-      "id": 8,
-      "nim": "102022580023",
-      "kode_matkul": "SI101",
-      "nama_matkul": "Algoritma dan Pemrograman",
-      "nilai_huruf": "AB",
-      "nilai_angka": "3.50",
-      "sks": 3,
-      "semester": 1,
-      "tahun_ajaran": "2024/2025",
-      "created_at": "2026-05-14T18:47:22.000000Z",
-      "updated_at": "2026-05-14T18:47:22.000000Z"
-    }
-  ],
-  "meta": {
-    "service_name": "Prasyarat-Kurikulum-Service",
-    "api_version": "v1",
-    "total": 10
-  }
-}
-```
-
----
-
-### 2. Resource (Mengambil Data Spesifik)
-**Endpoint:** `GET /api/v1/nilai/102022580023`  
-**Deskripsi:** Mengambil detail nilai dan perhitungan IPS mahasiswa tertentu.
-
-**Sample Response:**
-```json
-{
-  "status": "success",
-  "message": "Data nilai untuk NIM 102022580023 ditemukan",
-  "data": {
-    "nim": "102022580023",
-    "ips": 3.65,
-    "total_sks": 20,
-    "data_nilai": [
-      {
-        "id": 8,
-        "kode_matkul": "SI101",
-        "nama_matkul": "Algoritma dan Pemrograman",
-        "nilai_huruf": "AB",
-        "nilai_angka": 3.5,
-        "sks": 3,
-        "created_at": "2026-05-14T18:47:22.000000Z"
-      }
-    ]
-  },
+  "message": "...",
+  "data": [ ... ],
   "meta": {
     "service_name": "Prasyarat-Kurikulum-Service",
     "api_version": "v1"
@@ -175,55 +123,172 @@ Setiap request ke API wajib menyertakan header keamanan berikut:
 }
 ```
 
----
+Header response wajib: `Content-Type: application/json; charset=UTF-8`
 
-### 3. Action (Menambah Data / Memicu Proses)
-**Endpoint:** `POST /api/v1/nilai`  
-**Body (JSON):**
-```json
-{
-  "nim": "102022580023",
-  "kode_matkul": "SI301",
-  "nama_matkul": "Basis Data",
-  "nilai_huruf": "A",
-  "nilai_angka": 4,
-  "sks": 3,
-  "semester": 3,
-  "tahun_ajaran": "2025/2026"
-}
+**POST — tanpa Content-Type (harus 415):**
+
+```bash
+curl -i -X POST -H "X-IAE-KEY: 102022580023" http://localhost:8000/api/v1/nilai -d '{}'
 ```
 
-**Sample Response:**
+**POST — dengan Content-Type JSON (harus 201):**
+
+```bash
+curl -i -X POST http://localhost:8000/api/v1/nilai \
+  -H "X-IAE-KEY: 102022580023" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nim": "102022580023",
+    "kode_matkul": "SI501",
+    "nama_matkul": "Keamanan Sistem Informasi",
+    "nilai_huruf": "A",
+    "nilai_angka": 4,
+    "sks": 3,
+    "semester": 5,
+    "tahun_ajaran": "2025/2026"
+  }'
+```
+
+### Langkah 8 — Tes via Swagger UI
+
+1. Buka http://localhost:8000/api/documentation
+2. Klik **Authorize** → isi `102022580023` pada **X-IAE-KEY**
+3. Coba endpoint **GET /api/v1/kurikulum** → Execute → harus **200**
+4. Coba **POST /api/v1/nilai** dengan body JSON → harus **201**
+
+### Menstop service
+
+```bash
+docker compose down
+```
+
+### Alternatif: Laravel Sail
+
+Jika lebih nyaman memakai Sail, langkah setara:
+
+```bash
+./vendor/bin/sail up -d --build
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate:fresh --seed
+```
+
+---
+
+## Checklist Rubrik IAE-T2
+
+| No | Rubrik | Lokasi verifikasi |
+|---|---|---|
+| 1 | Docker / docker-compose | `docker-compose.yml` + `docker compose ps` |
+| 2 | Endpoint `/api/v1/*` | Swagger UI / `openapi.json` |
+| 3 | Wrapper IAE-T2 (runtime) | curl GET `/api/v1/kurikulum` + header key |
+| 4 | Wrapper IAE-T2 (dokumentasi) | Schemas `IaeT2SuccessResponse` di OpenAPI |
+| 5 | Spesifikasi OpenAPI | `/docs/openapi.json` |
+| 6 | Konfigurasi Swagger UI | `/api/documentation` + `config/l5-swagger.php` |
+| 7 | Schema GraphQL | `graphql/schema.graphql` |
+| 8 | GraphQL Playground | `/graphiql` |
+| 9 | Header X-IAE-KEY | `102022580023` |
+| 10 | Content-Type (runtime) | Header response + POST tanpa JSON → 415 |
+| 11 | Content-Type (dokumentasi) | OpenAPI header + `info.description` |
+
+---
+
+## Endpoint REST `/api/v1/*`
+
+| Method | Endpoint | Fungsi |
+|---|---|---|
+| GET | `/api/v1/kurikulum` | Daftar kurikulum |
+| GET | `/api/v1/kurikulum/{kode}` | Detail kurikulum |
+| GET | `/api/v1/nilai` | Daftar nilai |
+| GET | `/api/v1/nilai/{nim}` | Nilai + IPS per NIM |
+| POST | `/api/v1/nilai` | Catat nilai baru |
+
+Semua endpoint di atas wajib header:
+
+```
+X-IAE-KEY: 102022580023
+Content-Type: application/json   (khusus POST/PUT/PATCH)
+```
+
+---
+
+## Standar Response IAE-T2
+
+**Sukses (2xx):**
+
 ```json
 {
   "status": "success",
-  "message": "Data nilai berhasil dicatat",
-  "data": {
-    "id": 11,
-    "nim": "102022580023",
-    "kode_matkul": "SI301",
-    "created_at": "2026-05-15T02:30:00.000000Z"
+  "message": "Pesan sukses",
+  "data": {},
+  "meta": {
+    "service_name": "Prasyarat-Kurikulum-Service",
+    "api_version": "v1"
   }
+}
+```
+
+**Error (4xx/5xx):**
+
+```json
+{
+  "status": "error",
+  "message": "Pesan error",
+  "errors": null
 }
 ```
 
 ---
 
-## 🔗 GraphQL Showcase
-Gunakan GraphiQL IDE di `/graphiql` untuk melakukan query yang lebih fleksibel.
+## GraphQL
 
-**Query:**
+**Playground:** http://localhost:8000/graphiql
+
+**Contoh query:**
+
 ```graphql
-query {
-  kurikulum(kode_matkul: "SI201") {
+{
+  kurikulums {
+    kode_matkul
     nama_matkul
     sks
-    semester
-    prasyarat
+  }
+}
+```
+
+```graphql
+{
+  nilaiByNim(nim: "102022580023") {
+    kode_matkul
+    nama_matkul
+    nilai_huruf
+    nilai_angka
   }
 }
 ```
 
 ---
 
-*Dibuat untuk memenuhi tugas mata kuliah Integrasi Aplikasi Enterprise.*
+## Stack Teknologi
+
+- Laravel 12 (PHP 8.5)
+- MySQL 8.4
+- Docker Compose (Laravel Sail)
+- L5-Swagger (OpenAPI 3.0)
+- Lighthouse GraphQL + GraphiQL
+
+---
+
+## Troubleshooting
+
+| Masalah | Solusi |
+|---|---|
+| `Docker is not running` | Nyalakan Docker Desktop |
+| Build gagal / vendor tidak ada | Jalankan `composer install` dulu |
+| Error koneksi MySQL | Pastikan `.env` pakai `DB_HOST=mysql`, bukan `127.0.0.1` |
+| Duplicate entry saat seed | Pakai `migrate:fresh --seed`, bukan `migrate --seed` |
+| Swagger "Failed to load API definition" | Pastikan `/api/docs` → HTTP 200, lalu refresh browser |
+| Port 8000 sudah dipakai | Ubah `APP_PORT=8001` di `.env`, lalu `docker compose up -d` |
+
+---
+
+*Dibuat untuk memenuhi tugas mata kuliah Integrasi Aplikasi Enterprise — Standar IAE-T2.*
