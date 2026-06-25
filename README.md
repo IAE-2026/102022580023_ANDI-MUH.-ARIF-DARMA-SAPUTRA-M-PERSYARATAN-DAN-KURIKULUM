@@ -44,10 +44,155 @@ Script `setup.sh` menjalankan 7 langkah otomatis:
 | 6 | `php artisan key:generate` + `config:clear` |
 | 7 | `php artisan migrate:fresh --seed` |
 
-Setelah selesai, buka:
+Setelah selesai:
 
+- GraphiQL → http://localhost:8000/graphiql *(copy paste syntax di bawah)*
 - Swagger UI → http://localhost:8000/api/documentation
-- GraphiQL → http://localhost:8000/graphiql *(tempel syntax GraphQL dari bagian bawah README)*
+
+---
+
+## GraphiQL — Copy Paste (GET & POST)
+
+**Buka:** http://localhost:8000/graphiql
+
+**Cara:** hapus isi panel kiri → **copy syntax di bawah** → **paste** → klik **▶ Execute**
+
+---
+
+### GET — Query (baca data)
+
+#### GET 1 — Health check (IAE-T2)
+
+```graphql
+{
+  serviceStatus {
+    status
+    message
+    meta {
+      service_name
+      api_version
+    }
+  }
+}
+```
+
+#### GET 2 — Daftar kurikulum
+
+```graphql
+{
+  kurikulums {
+    kode_matkul
+    nama_matkul
+    sks
+    semester
+    prodi
+  }
+}
+```
+
+#### GET 3 — Detail kurikulum by kode
+
+```graphql
+{
+  kurikulum(kode_matkul: "SI501") {
+    kode_matkul
+    nama_matkul
+    sks
+    prasyarat
+    deskripsi
+  }
+}
+```
+
+#### GET 4 — Semua nilai
+
+```graphql
+{
+  nilais {
+    nim
+    kode_matkul
+    nama_matkul
+    nilai_huruf
+    nilai_angka
+    sks
+    semester
+    tahun_ajaran
+  }
+}
+```
+
+#### GET 5 — Nilai by NIM
+
+```graphql
+{
+  nilaiByNim(nim: "102022580023") {
+    kode_matkul
+    nama_matkul
+    nilai_huruf
+    nilai_angka
+    sks
+    semester
+    tahun_ajaran
+  }
+}
+```
+
+---
+
+### POST — Mutation (input data)
+
+#### POST 1 — Input nilai baru
+
+Copy paste langsung. Respons otomatis format IAE-T2 (`status`, `message`, `data`, `meta`).
+
+```graphql
+mutation InputNilai {
+  createNilai(
+    input: {
+      nim: "102022580023"
+      kode_matkul: "SI501"
+      nama_matkul: "Keamanan Sistem Informasi"
+      nilai_huruf: "A"
+      nilai_angka: 4
+      sks: 3
+      semester: 5
+      tahun_ajaran: "2025/2026"
+    }
+  )
+}
+```
+
+Contoh respons sukses:
+
+```json
+{
+  "status": "success",
+  "message": "Nilai mahasiswa berhasil dicatat",
+  "data": {
+    "nim": "102022580023",
+    "kode_matkul": "SI501",
+    "nama_matkul": "Keamanan Sistem Informasi",
+    "nilai_huruf": "A",
+    "nilai_angka": 4,
+    "sks": 3,
+    "semester": 5,
+    "tahun_ajaran": "2025/2026"
+  },
+  "meta": {
+    "service_name": "Prasyarat-Kurikulum-Service",
+    "api_version": "v1"
+  }
+}
+```
+
+| Field input | Nilai yang boleh |
+|---|---|
+| `nilai_huruf` | A, AB, B, BC, C, D, E |
+| `nilai_angka` | 0 – 4 |
+| `sks` | 1 – 6 |
+| `semester` | 1 – 14 |
+
+> Jika error duplicate, ganti `nim` atau `kode_matkul` lalu Execute lagi.
 
 ---
 
@@ -189,127 +334,9 @@ curl -i -X POST http://localhost:8000/api/v1/nilai \
   }'
 ```
 
-#### Langkah 8 — Tes GraphQL (GraphiQL)
+#### Langkah 8 — Tes GraphQL
 
-1. Buka **http://localhost:8000/graphiql**
-2. **Salin** salah satu syntax di bawah → **tempel** di panel kiri
-3. Klik tombol **▶ Execute** (atau `Ctrl+Enter` / `Cmd+Enter`)
-4. Lihat hasil di panel kanan
-
-> **Mutation `createNilai`:** cukup tempel syntax input nilai. Respons otomatis format IAE-T2 (`status`, `message`, `data`, `meta`) — **tidak perlu** menulis `{ id }` atau field wrapper.
-
-**1) Health check GraphQL (wrapper IAE-T2):**
-
-```graphql
-{
-  serviceStatus {
-    status
-    message
-    meta {
-      service_name
-      api_version
-    }
-  }
-}
-```
-
-**2) Daftar kurikulum:**
-
-```graphql
-{
-  kurikulums {
-    kode_matkul
-    nama_matkul
-    sks
-    semester
-    prodi
-  }
-}
-```
-
-**3) Detail kurikulum by kode:**
-
-```graphql
-{
-  kurikulum(kode_matkul: "SI501") {
-    kode_matkul
-    nama_matkul
-    sks
-    prasyarat
-    deskripsi
-  }
-}
-```
-
-**4) Nilai by NIM:**
-
-```graphql
-{
-  nilaiByNim(nim: "102022580023") {
-    kode_matkul
-    nama_matkul
-    nilai_huruf
-    nilai_angka
-    sks
-    semester
-    tahun_ajaran
-  }
-}
-```
-
-**5) Input nilai baru (mutation — copy paste langsung):**
-
-```graphql
-mutation InputNilai {
-  createNilai(
-    input: {
-      nim: "102022580023"
-      kode_matkul: "SI501"
-      nama_matkul: "Keamanan Sistem Informasi"
-      nilai_huruf: "A"
-      nilai_angka: 4
-      sks: 3
-      semester: 5
-      tahun_ajaran: "2025/2026"
-    }
-  )
-}
-```
-
-Respons sukses otomatis (format IAE-T2):
-
-```json
-{
-  "status": "success",
-  "message": "Nilai mahasiswa berhasil dicatat",
-  "data": {
-    "nim": "102022580023",
-    "kode_matkul": "SI501",
-    "nama_matkul": "Keamanan Sistem Informasi",
-    "nilai_huruf": "A",
-    "nilai_angka": 4,
-    "sks": 3,
-    "semester": 5,
-    "tahun_ajaran": "2025/2026"
-  },
-  "meta": {
-    "service_name": "Prasyarat-Kurikulum-Service",
-    "api_version": "v1"
-  }
-}
-```
-
-**Tes via curl (opsional):**
-
-```bash
-curl -i http://localhost:8000/graphql
-```
-
-```bash
-curl -X POST http://localhost:8000/graphql \
-  -H "Content-Type: application/json" \
-  -d '{"query":"{ kurikulums { kode_matkul nama_matkul sks } }"}'
-```
+Buka http://localhost:8000/graphiql → copy paste syntax dari section **[GraphiQL — Copy Paste (GET & POST)](#graphiql--copy-paste-get--post)** di atas.
 
 #### Langkah 9 — Tes via Swagger UI
 
@@ -393,146 +420,6 @@ Content-Type: application/json   (khusus POST/PUT/PATCH)
   "message": "Pesan error",
   "errors": null
 }
-```
-
----
-
-## GraphQL — Panduan GraphiQL untuk Dosen
-
-**Playground:** http://localhost:8000/graphiql
-
-### Cara pakai (3 langkah)
-
-1. Buka link GraphiQL di atas
-2. Hapus isi panel kiri, **tempel** syntax dari daftar di bawah
-3. Klik **▶ Execute**
-
-| URL | Fungsi |
-|---|---|
-| `/graphiql` | UI interaktif — tempel syntax di sini |
-| `/graphql` | Endpoint API (health check GET → HTTP 200) |
-
----
-
-### Syntax siap tempel
-
-#### A. Health check service (IAE-T2)
-
-```graphql
-{
-  serviceStatus {
-    status
-    message
-    meta {
-      service_name
-      api_version
-    }
-  }
-}
-```
-
-#### B. Lihat semua kurikulum
-
-```graphql
-{
-  kurikulums {
-    kode_matkul
-    nama_matkul
-    sks
-    semester
-    prodi
-  }
-}
-```
-
-#### C. Lihat detail satu mata kuliah
-
-Ganti `"SI501"` dengan kode matkul lain jika perlu.
-
-```graphql
-{
-  kurikulum(kode_matkul: "SI501") {
-    kode_matkul
-    nama_matkul
-    sks
-    semester
-    prasyarat
-    deskripsi
-  }
-}
-```
-
-#### D. Lihat nilai mahasiswa by NIM
-
-Ganti NIM jika perlu.
-
-```graphql
-{
-  nilaiByNim(nim: "102022580023") {
-    kode_matkul
-    nama_matkul
-    nilai_huruf
-    nilai_angka
-    sks
-    semester
-    tahun_ajaran
-  }
-}
-```
-
-#### E. Input nilai baru ⭐ (mutation)
-
-**Tempel langsung** — tidak perlu `{ id }`, tidak perlu tulis `status` / `meta`:
-
-```graphql
-mutation InputNilai {
-  createNilai(
-    input: {
-      nim: "102022580023"
-      kode_matkul: "SI501"
-      nama_matkul: "Keamanan Sistem Informasi"
-      nilai_huruf: "A"
-      nilai_angka: 4
-      sks: 3
-      semester: 5
-      tahun_ajaran: "2025/2026"
-    }
-  )
-}
-```
-
-| Field input | Aturan |
-|---|---|
-| `nilai_huruf` | `A`, `AB`, `B`, `BC`, `C`, `D`, `E` |
-| `nilai_angka` | 0 – 4 |
-| `sks` | 1 – 6 |
-| `semester` | 1 – 14 |
-| `kode_matkul` | Harus ada di data kurikulum (mis. `SI501`) |
-
-Respons HTTP otomatis format IAE-T2:
-
-```json
-{
-  "status": "success",
-  "message": "Nilai mahasiswa berhasil dicatat",
-  "data": { "..." },
-  "meta": {
-    "service_name": "Prasyarat-Kurikulum-Service",
-    "api_version": "v1"
-  }
-}
-```
-
-> Jika NIM + kode matkul sudah pernah diinput, bisa muncul error duplicate. Ganti NIM atau `kode_matkul` untuk tes ulang.
-
----
-
-### GET `/graphql` (tanpa query)
-
-Buka di browser atau curl — harus HTTP 200:
-
-```bash
-curl -i http://localhost:8000/graphql
 ```
 
 ---
