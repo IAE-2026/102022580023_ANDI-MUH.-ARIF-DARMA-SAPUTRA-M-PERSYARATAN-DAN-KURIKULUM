@@ -92,8 +92,8 @@ docker compose exec laravel.test php artisan migrate:fresh --seed
 | Swagger UI | http://localhost:8000/api/documentation | Halaman docs tampil |
 | OpenAPI JSON (publik) | http://localhost:8000/docs/openapi.json | JSON valid |
 | OpenAPI JSON (Swagger) | http://localhost:8000/api/docs | JSON valid |
-| GraphQL Playground | http://localhost:8000/graphiql | UI tampil |
-| GraphQL endpoint | http://localhost:8000/graphql | HTTP 200 |
+| GraphQL Playground | http://localhost:8000/graphiql | UI tampil, bisa jalankan query |
+| GraphQL endpoint | http://localhost:8000/graphql | Respons JSON saat kirim `query` (lihat bawah) |
 
 ### Langkah 7 — Tes REST API (IAE-T2)
 
@@ -241,9 +241,21 @@ Content-Type: application/json   (khusus POST/PUT/PATCH)
 
 ## GraphQL
 
-**Playground:** http://localhost:8000/graphiql
+**Playground (UI interaktif):** http://localhost:8000/graphiql
 
-**Contoh query:**
+**Endpoint API:** http://localhost:8000/graphql
+
+> `/graphql` **bukan halaman web**. Jika dibuka langsung di browser tanpa query, akan muncul error `"GraphQL Request must include at least one of those two parameters: query or queryId"` — itu **normal**. Untuk tes interaktif, pakai **GraphiQL** di `/graphiql`.
+
+**Tes endpoint via curl:**
+
+```bash
+curl -X POST http://localhost:8000/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ kurikulums { kode_matkul nama_matkul sks } }"}'
+```
+
+**Contoh query di GraphiQL:**
 
 ```graphql
 {
@@ -287,6 +299,7 @@ Content-Type: application/json   (khusus POST/PUT/PATCH)
 | Error koneksi MySQL | Pastikan `.env` pakai `DB_HOST=mysql`, bukan `127.0.0.1` |
 | Duplicate entry saat seed | Pakai `migrate:fresh --seed`, bukan `migrate --seed` |
 | `Access denied for user 'sail'` | Volume MySQL masih pakai password lama — lihat solusi di bawah |
+| GraphQL error `must include query` | Buka `/graphiql` untuk UI, atau kirim POST ke `/graphql` dengan body JSON |
 | Swagger "Failed to load API definition" | Pastikan `/api/docs` → HTTP 200, lalu refresh browser |
 | Port 8000 sudah dipakai | Ubah `APP_PORT=8001` di `.env`, lalu `docker compose up -d` |
 
