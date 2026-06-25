@@ -37,6 +37,24 @@ type Query {
     nilaiByNim(nim: String! @eq): [Nilai!]! @all
 }
 
+"Input untuk menambah nilai mahasiswa."
+input CreateNilaiInput {
+    nim: String!
+    kode_matkul: String!
+    nama_matkul: String!
+    nilai_huruf: String!
+    nilai_angka: Float!
+    sks: Int!
+    semester: Int!
+    tahun_ajaran: String!
+}
+
+type Mutation {
+    "Menambahkan data nilai mahasiswa baru."
+    createNilai(input: CreateNilaiInput!): Nilai!
+        @field(resolver: "App\\GraphQL\\Mutations\\CreateNilai")
+}
+
 "Tipe data Kurikulum (mata kuliah)."
 type Kurikulum {
     id: ID!
@@ -63,6 +81,8 @@ type Nilai {
     sks: Int!
     semester: Int!
     tahun_ajaran: String!
+    receipt_number: String
+    recorded_by: String
     created_at: DateTime!
     updated_at: DateTime!
     kurikulum: Kurikulum @belongsTo
