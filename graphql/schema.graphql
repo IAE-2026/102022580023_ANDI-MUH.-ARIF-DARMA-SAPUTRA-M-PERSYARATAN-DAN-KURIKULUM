@@ -4,7 +4,26 @@ scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
 "A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
 scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
 
+"Arbitrary JSON value."
+scalar JSON @scalar(class: "App\\GraphQL\\Scalars\\JSON")
+
+"Metadata wrapper IAE-T2."
+type ApiMeta {
+    service_name: String!
+    api_version: String!
+}
+
+"Wrapper respons IAE-T2 (status, message, data, meta)."
+type IaeResponse {
+    status: String!
+    message: String!
+    data: JSON
+    meta: ApiMeta!
+}
+
 type Query {
+    "Health check dengan format wrapper IAE-T2."
+    serviceStatus: IaeResponse! @field(resolver: "App\\GraphQL\\Queries\\ServiceStatus")
     "Mengambil daftar seluruh kurikulum (mata kuliah)."
     kurikulums: [Kurikulum!]! @all
 

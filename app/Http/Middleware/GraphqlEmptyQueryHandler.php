@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\ApiResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,17 +25,10 @@ class GraphqlEmptyQueryHandler
         }
 
         if ($request->isMethod('GET')) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'GraphQL endpoint aktif.',
-                'data' => [
-                    'endpoint' => url('/graphql'),
-                    'playground' => url('/graphiql'),
-                    'hint' => 'Kirim POST dengan body {"query":"{ ... }"} atau buka /graphiql.',
-                ],
-            ], 200, [
-                'Content-Type' => 'application/json; charset=UTF-8',
-            ]);
+            return ApiResponse::success(
+                (object) [],
+                'Pesan sukses'
+            );
         }
 
         return $next($request);
