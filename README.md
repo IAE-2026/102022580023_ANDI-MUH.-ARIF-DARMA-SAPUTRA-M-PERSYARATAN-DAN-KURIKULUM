@@ -57,6 +57,9 @@ Setelah selesai:
 
 **Cara:** hapus isi panel kiri → **copy syntax di bawah** → **paste** → klik **▶ Execute**
 
+> Semua respons GraphQL (GET & POST) otomatis dibungkus **IAE-T2** di panel kanan:
+> `status`, `message`, `data`, `meta` — tidak perlu ditulis manual di query.
+
 ---
 
 ### GET — Query (baca data)
@@ -68,10 +71,6 @@ Setelah selesai:
   serviceStatus {
     status
     message
-    meta {
-      service_name
-      api_version
-    }
   }
 }
 ```
@@ -86,6 +85,21 @@ Setelah selesai:
     sks
     semester
     prodi
+  }
+}
+```
+
+Contoh respons (IAE-T2 otomatis):
+
+```json
+{
+  "status": "success",
+  "message": "Data kurikulum berhasil diambil",
+  "data": [ ... ],
+  "meta": {
+    "service_name": "Prasyarat-Kurikulum-Service",
+    "api_version": "v1",
+    "total": 10
   }
 }
 ```

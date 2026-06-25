@@ -11,17 +11,13 @@ use Symfony\Component\HttpFoundation\Response;
 class WrapGraphqlIaeResponse
 {
     /**
-     * Membungkus respons GraphQL mutation createNilai ke format IAE-T2 otomatis.
+     * Membungkus semua respons GraphQL (GET query & POST mutation) ke format IAE-T2.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
 
-        if (! $request->is('graphql') || ! in_array($request->method(), ['POST', 'PUT', 'PATCH'], true)) {
-            return $response;
-        }
-
-        if (! $this->isCreateNilaiMutation($request)) {
+        if (! $request->is('graphql') || ! $this->hasGraphqlQuery($request)) {
             return $response;
         }
 
@@ -31,27 +27,77 @@ class WrapGraphqlIaeResponse
             return $response;
         }
 
-        if (isset($payload['errors'])) {
-            $firstError = $payload['errors'][0] ?? [];
-            $message = $firstError['message'] ?? 'Terjadi kesalahan pada permintaan GraphQL.';
-            $validation = $firstError['extensions']['validation'] ?? null;
-
-            return ApiResponse::error($message, 422, $validation ?? $payload['errors']);
-        }
-
-        if (! isset($payload['data']['createNilai'])) {
+        // Sudah format IAE-T2 (cegah double-wrap).
+        if (isset($payload['status'], $payload['message'], $payload['meta'])) {
             return $response;
         }
 
-        $nilaiData = $payload['data']['createNilai'];
+        if (isset($payload['errors'])) {
+            return $this->wrapErrors($payload['errors']);
+        }
+
+        if (! isset($payload['data']) || ! is_array($payload['data'])) {
+            return $response;
+        }
+
+        return $this->wrapSuccess($request, $payload['data']);
+    }
+
+    private function hasGraphqlQuery(Request $request): bool
+    {
+        return (bool) (
+            $request->query('query')
+            || $request->query('queryId')
+            || $request->input('query')
+            || $request->input('queryId')
+        );
+    }
+
+    private function wrapErrors(array $errors): Response
+    {
+        $firstError = $errors[0] ?? [];
+        $message = $firstError['message'] ?? 'Terjadi kesalahan pada permintaan GraphQL.';
+        $validation = $firstError['extensions']['validation'] ?? null;
+
+        return ApiResponse::error($message, 422, $validation ?? $errors);
+    }
+
+    private function wrapSuccess(Request $request, array $data): Response
+    {
+        if ($this->isCreateNilaiMutation($request)) {
+            return $this->wrapCreateNilai($data);
+        }
+
+        if (isset($data['serviceStatus']) && is_array($data['serviceStatus'])) {
+            return $this->wrapExistingIaePayload($data['serviceStatus']);
+        }
+
+        if (count($data) === 1) {
+            $operation = array_key_first($data);
+            $value = $data[$operation];
+
+            if (is_array($value) && isset($value['status'], $value['meta'])) {
+                return $this->wrapExistingIaePayload($value);
+            }
+
+            [$message, $code, $meta] = $this->messageForOperation($operation, $value);
+
+            return ApiResponse::success($value, $message, $code, $meta);
+        }
+
+        return ApiResponse::success($data, 'Data retrieved successfully', 200);
+    }
+
+    private function wrapCreateNilai(array $data): Response
+    {
+        if (! isset($data['createNilai'])) {
+            return ApiResponse::success($data, 'Data retrieved successfully', 200);
+        }
+
+        $nilaiData = $data['createNilai'];
 
         if (is_array($nilaiData) && isset($nilaiData['status'], $nilaiData['meta'])) {
-            return ApiResponse::success(
-                $nilaiData['data'] ?? $nilaiData,
-                $nilaiData['message'] ?? 'Nilai mahasiswa berhasil dicatat',
-                201,
-                is_array($nilaiData['meta'] ?? null) ? $nilaiData['meta'] : []
-            );
+            return $this->wrapExistingIaePayload($nilaiData, 201);
         }
 
         if (is_array($nilaiData) && isset($nilaiData['id'])) {
@@ -68,14 +114,50 @@ class WrapGraphqlIaeResponse
         );
     }
 
-    private function isCreateNilaiMutation(Request $request): bool
+    private function wrapExistingIaePayload(array $payload, int $code = 200): Response
     {
-        $query = $request->input('query', '');
+        return ApiResponse::success(
+            $payload['data'] ?? (object) [],
+            $payload['message'] ?? 'Data retrieved successfully',
+            $code,
+            is_array($payload['meta'] ?? null) ? $payload['meta'] : []
+        );
+    }
 
-        if (! is_string($query) || $query === '') {
-            return false;
+    /**
+     * @return array{0: string, 1: int, 2: array<string, mixed>}
+     */
+    private function messageForOperation(string $operation, mixed $value): array
+    {
+        $meta = [];
+
+        if (in_array($operation, ['kurikulums', 'nilais'], true) && is_array($value)) {
+            $meta['total'] = count($value);
         }
 
-        return (bool) preg_match('/\bcreateNilai\s*\(/', $query);
+        $message = match ($operation) {
+            'kurikulums' => 'Data kurikulum berhasil diambil',
+            'kurikulum' => 'Detail kurikulum berhasil diambil',
+            'nilais' => 'Data nilai berhasil diambil',
+            'nilaiByNim' => 'Data nilai mahasiswa berhasil diambil',
+            'serviceStatus' => 'Data retrieved successfully',
+            default => 'Data retrieved successfully',
+        };
+
+        return [$message, 200, $meta];
+    }
+
+    private function isCreateNilaiMutation(Request $request): bool
+    {
+        $query = $this->getQueryString($request);
+
+        return $query !== '' && (bool) preg_match('/\bcreateNilai\s*\(/', $query);
+    }
+
+    private function getQueryString(Request $request): string
+    {
+        $query = $request->input('query', $request->query('query', ''));
+
+        return is_string($query) ? $query : '';
     }
 }

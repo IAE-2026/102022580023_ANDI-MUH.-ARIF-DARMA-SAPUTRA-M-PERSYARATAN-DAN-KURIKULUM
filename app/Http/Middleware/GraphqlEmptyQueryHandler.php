@@ -27,7 +27,7 @@ class GraphqlEmptyQueryHandler
         if ($request->isMethod('GET')) {
             return ApiResponse::success(
                 (object) [],
-                'Pesan sukses'
+                'Data retrieved successfully'
             );
         }
 
