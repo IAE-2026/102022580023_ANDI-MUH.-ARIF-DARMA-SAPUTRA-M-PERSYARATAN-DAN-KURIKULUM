@@ -1,0 +1,41 @@
+%%{init: {'theme':'base', 'themeVariables': {'background':'#ffffff', 'primaryColor':'#fff9c4', 'lineColor':'#333333'}}}%%
+flowchart LR
+    subgraph Dosen["Dosen"]
+        direction LR
+        S((Start)) --> D1[Review dan setujui KRS]
+    end
+
+    subgraph SB["Service B - Pencatatan KRS"]
+        direction LR
+        B1[Terima permintaan KRS] --> B2{Semua validasi lolos?}
+        B2 -->|ya| B3[Simpan data KRS]
+        B3 --> B4[GET /api/v1/krs]
+        B4 --> B5((KRS disetujui))
+        B2 -->|tidak| BX((KRS ditolak))
+    end
+
+    subgraph SA["Service A - Data Mahasiswa"]
+        direction LR
+        A1[GET /mahasiswa/nim] --> A2{Mahasiswa aktif?}
+        A2 -->|aktif| A3[OK]
+        A2 -->|tidak| AX((KRS ditolak))
+    end
+
+    subgraph SC["Service C - Nilai dan Kurikulum"]
+        direction LR
+        C1[GET /nilai/nim cek IPS] --> C2{IPS memenuhi?}
+        C2 -->|ya| C3[GET /kurikulum/kode]
+        C3 --> C4{Matkul valid?}
+        C4 -->|valid| C5[OK]
+        C2 -->|tidak| CX((KRS ditolak))
+        C4 -->|tidak| CX2((KRS ditolak))
+    end
+
+    D1 --> B1
+    B1 --> A1
+    A3 --> C1
+    C5 --> B2
+
+    B1 -.- N1[Sub proses 3 POST /api/v1/krs]
+    A1 -.- N2[Sub proses 1]
+    C1 -.- N3[Sub proses 2]

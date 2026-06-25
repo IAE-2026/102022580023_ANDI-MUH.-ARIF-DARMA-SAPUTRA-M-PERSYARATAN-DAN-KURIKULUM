@@ -1,0 +1,87 @@
+%%{init: {'theme':'base', 'themeVariables': {'background':'#ffffff', 'primaryColor':'#fce4ec', 'lineColor':'#333333', 'fontSize':'10px'}}}%%
+flowchart LR
+    subgraph PRE["Persiapan Server - Studi Kasus TIM-09"]
+        direction LR
+        PRE1[Developer jalankan php artisan iae:sync-token] --> PRE2[POST Cloud auth/token KEY-MHS-117]
+        PRE2 --> PRE3{M2M aktif?}
+        PRE3 -->|401| PRE4[Fallback login warga01]
+        PRE3 -->|200| PRE5[IAE_SSO_TOKEN masuk .env]
+        PRE4 --> PRE5
+    end
+
+    subgraph PM["Postman - Dosen warga01"]
+        direction LR
+        PM1((Start Input Nilai)) --> PM2[POST iae-sso.virtualfri.id/api/v1/auth/token]
+        PM2 --> PM3[Dapat JWT RS256 role dosen]
+        PM3 --> PM4[POST localhost:8000/api/v1/nilai]
+        PM4 --> PM5[Header X-IAE-KEY 102022580023]
+        PM5 --> PM6[Header Authorization Bearer JWT]
+        PM6 --> PM7[Body nim kode_matkul nilai_huruf sks semester]
+    end
+
+    subgraph SSO["Cloud SSO iae-sso.virtualfri.id"]
+        direction LR
+        SSO1[Terima login warga01] --> SSO2[Return JWT]
+        SSO3[GET /api/v1/auth/jwks] --> SSO4[Return public key RS256]
+    end
+
+    subgraph SVC["Service C - NilaiController store"]
+        direction LR
+        M1[Middleware CheckIaeKey] --> M2{X-IAE-KEY = 102022580023?}
+        M2 -->|tidak| EX401((401 Unauthorized))
+        M2 -->|ya| M3[Middleware VerifyJwtSso]
+        M3 --> M4[GET jwks dari Cloud SSO]
+        M4 --> M5{JWT valid dan role dosen atau admin?}
+        M5 -->|tidak| EX403((403 Forbidden))
+        M5 -->|ya| M6[Validasi body request]
+        M6 --> M7{Input valid?}
+        M7 -->|422| EX422((422 Validasi gagal))
+        M7 -->|ya| M8[Panggil Service A]
+    end
+
+    subgraph SRA["Service A - Data Mahasiswa"]
+        direction LR
+        A1[GET /api/v1/mahasiswa/nim dari body] --> A2{Status aktif?}
+        A2 -->|tidak| EX400((400 Mahasiswa tidak aktif))
+        A2 -->|ya| A3[OK lanjut simpan]
+    end
+
+    subgraph DB["MySQL Service C"]
+        direction LR
+        D1[INSERT tabel nilais] --> D2[Set recorded_by warga01 email]
+        D2 --> D3[UPDATE receipt_number setelah SOAP]
+    end
+
+    subgraph SOAP["Cloud Pusat SOAP Audit"]
+        direction LR
+        S1[IaeTokenService ambil IAE_SSO_TOKEN] --> S2[POST /soap/v1/audit]
+        S2 --> S3[TeamID TIM-09 ActivityName NilaiRecorded]
+        S3 --> S4[Return ReceiptNumber contoh IAE-LOG-2026-828A266C]
+    end
+
+    subgraph RMQ["Cloud Pusat RabbitMQ"]
+        direction LR
+        R1[POST /api/v1/messages/publish] --> R2[routing_key nilai.recorded]
+        R2 --> R3[Wrapper field message wajib]
+        R3 --> R4[Board iae-sso.virtualfri.id badge TEAM-09]
+    end
+
+    subgraph END["Response ke Postman"]
+        direction LR
+        E1[HTTP 201 Created] --> E2[receipt_number dan event_published true]
+        E2 --> E3((End Nilai tercatat))
+    end
+
+    PRE5 -.-> S1
+    PM2 --> SSO1
+    PM4 --> M1
+    M4 --> SSO3
+    M8 --> A1
+    A3 --> D1
+    D2 --> S1
+    S4 --> D3
+    D3 --> R1
+    R4 --> E1
+
+    M8 -.- NOTE1[Transaksi kritis Tugas 3]
+    S3 -.- NOTE2[SOAP dan RabbitMQ pakai token .env bukan JWT Postman]

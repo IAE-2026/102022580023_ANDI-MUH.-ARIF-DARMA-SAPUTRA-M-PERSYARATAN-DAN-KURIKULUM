@@ -1,0 +1,50 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontSize 10
+
+|Dosen|
+start
+:Review dan setujui KRS mahasiswa;
+
+|Service B|
+:Terima permintaan KRS;
+note right: Sub proses 3\nPOST /api/v1/krs
+
+|Service A|
+:Validasi status mahasiswa;
+note right: Sub proses 1\nGET /api/v1/mahasiswa/nim
+if (Mahasiswa aktif?) then (aktif)
+else (tidak aktif)
+  :KRS ditolak;
+  stop
+endif
+
+|Service C|
+:Validasi prasyarat dan kurikulum;
+:GET /api/v1/nilai/nim;
+if (IPS memenuhi syarat?) then (memenuhi)
+else (tidak)
+  :KRS ditolak;
+  stop
+endif
+:GET /api/v1/kurikulum/kode;
+if (Matkul valid?) then (valid)
+else (tidak valid)
+  :KRS ditolak;
+  stop
+endif
+
+|Service B|
+if (Semua validasi lolos?) then (ya)
+else (tidak)
+  :KRS ditolak;
+  stop
+endif
+:Simpan data KRS;
+:GET /api/v1/krs;
+:KRS disetujui dan tercatat;
+stop
+
+@enduml

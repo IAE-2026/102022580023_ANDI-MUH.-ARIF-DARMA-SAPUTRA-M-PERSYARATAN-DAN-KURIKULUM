@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\ApiResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,14 +15,14 @@ class CheckIaeKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $apiKey = $request->header('X-IAE-KEY');
+        $expectedKey = (string) config('services.iae.api_nim', '102022580023');
+        $providedKey = (string) $request->header('X-IAE-KEY', '');
 
-        if (!$apiKey || $apiKey !== '102022580023') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthorized. Header X-IAE-KEY tidak valid atau tidak ditemukan.',
-                'errors' => null,
-            ], 401);
+        if ($providedKey === '' || ! hash_equals($expectedKey, $providedKey)) {
+            return ApiResponse::error(
+                'Unauthorized. Header X-IAE-KEY tidak valid atau tidak ditemukan.',
+                401
+            );
         }
 
         return $next($request);

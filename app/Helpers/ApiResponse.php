@@ -4,6 +4,12 @@ namespace App\Helpers;
 
 class ApiResponse
 {
+    private static function json(array $payload, int $code)
+    {
+        return response()->json($payload, $code)
+            ->header('Content-Type', 'application/json; charset=UTF-8');
+    }
+
     /**
      * Respon berhasil (Success - 2xx).
      */
@@ -14,12 +20,12 @@ class ApiResponse
             'message' => $message,
             'data' => $data,
             'meta' => array_merge([
-                'service_name' => 'Prasyarat-Kurikulum-Service',
+                'service_name' => config('services.iae.service_name', 'Prasyarat-Kurikulum-Service'),
                 'api_version' => 'v1',
             ], $meta),
         ];
 
-        return response()->json($response, $code);
+        return self::json($response, $code);
     }
 
     /**
@@ -27,7 +33,7 @@ class ApiResponse
      */
     public static function error(string $message = 'Something went wrong', int $code = 500, $errors = null)
     {
-        return response()->json([
+        return self::json([
             'status' => 'error',
             'message' => $message,
             'errors' => $errors,

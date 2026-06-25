@@ -37,6 +37,8 @@ return [
 
     'iae' => [
         'url' => env('IAE_SSO_URL', 'https://iae-sso.virtualfri.id'),
+        'api_nim' => env('IAE_API_NIM', '102022580023'),
+        'service_name' => env('SERVICE_NAME', 'Prasyarat-Kurikulum-Service'),
         'api_key' => env('IAE_API_KEY'),
         'team_id' => env('IAE_TEAM_ID', 'TIM-09'),
         'warga_email' => env('IAE_WARGA_EMAIL'),

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\ApiResponse;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\JwksService;
@@ -22,11 +23,10 @@ class VerifyJwtSso
         $authorization = $request->header('Authorization');
 
         if (! $authorization || ! str_starts_with($authorization, 'Bearer ')) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthorized. Bearer JWT dari IAE SSO diperlukan.',
-                'errors' => null,
-            ], 401);
+            return ApiResponse::error(
+                'Unauthorized. Bearer JWT dari IAE SSO diperlukan.',
+                401
+            );
         }
 
         $jwt = trim(substr($authorization, 7));
@@ -36,21 +36,19 @@ class VerifyJwtSso
             $decoded = JWT::decode($jwt, $keySet);
             $payload = (array) $decoded;
         } catch (\Throwable $exception) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'JWT tidak valid: '.$exception->getMessage(),
-                'errors' => null,
-            ], 401);
+            return ApiResponse::error(
+                'JWT tidak valid: '.$exception->getMessage(),
+                401
+            );
         }
 
         $email = $payload['sub'] ?? null;
 
         if (! $email) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'JWT tidak memiliki klaim sub (email).',
-                'errors' => null,
-            ], 401);
+            return ApiResponse::error(
+                'JWT tidak memiliki klaim sub (email).',
+                401
+            );
         }
 
         $profile = isset($payload['profile']) ? (array) $payload['profile'] : [];
@@ -70,11 +68,10 @@ class VerifyJwtSso
         $allowedRoles = config('services.iae.allowed_nilai_roles', ['dosen', 'admin']);
 
         if (! in_array($user->role?->name, $allowedRoles, true)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Forbidden. Role '.$user->role?->name.' tidak diizinkan mencatat nilai.',
-                'errors' => null,
-            ], 403);
+            return ApiResponse::error(
+                'Forbidden. Role '.$user->role?->name.' tidak diizinkan mencatat nilai.',
+                403
+            );
         }
 
         $request->attributes->set('iae_user', $user);

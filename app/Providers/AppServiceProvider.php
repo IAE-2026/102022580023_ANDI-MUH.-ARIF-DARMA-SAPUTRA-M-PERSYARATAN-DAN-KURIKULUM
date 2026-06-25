@@ -19,6 +19,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $source = storage_path('api-docs/api-docs.json');
+        $targetDir = public_path('docs');
+        $target = $targetDir.'/openapi.json';
+
+        if (file_exists($source)) {
+            if (! is_dir($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+
+            copy($source, $target);
+        }
     }
 }

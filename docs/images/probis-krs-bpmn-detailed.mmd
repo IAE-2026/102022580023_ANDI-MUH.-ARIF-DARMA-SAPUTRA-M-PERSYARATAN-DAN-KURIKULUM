@@ -1,0 +1,58 @@
+%%{init: {'theme':'base', 'themeVariables': {'background':'#ffffff', 'primaryColor':'#fff9c4', 'lineColor':'#333333', 'fontSize':'11px'}}}%%
+flowchart LR
+    subgraph P0["Probis Utama"]
+        direction LR
+        P0S((Start Awal Semester)) --> P0T[Dosen melakukan persetujuan KRS semester baru]
+    end
+
+    subgraph SB["Service B - Pencatatan KRS - Sub Proses 3"]
+        direction LR
+        SB1[Terima permintaan KRS mahasiswa] --> SB2[POST /api/v1/krs]
+        SB2 --> SB3{Semua validasi dari A dan C lolos?}
+        SB3 -->|ya| SB4[Simpan record KRS ke database B]
+        SB4 --> SB5[GET /api/v1/krs/tahun-ajaran-semester]
+        SB5 --> SB6[GET /api/v1/krs daftar semua KRS]
+        SB6 --> SB7((End KRS disetujui dan tercatat))
+        SB3 -->|tidak| SBX((End KRS ditolak))
+    end
+
+    subgraph SA["Service A - Data Mahasiswa - Sub Proses 1"]
+        direction LR
+        SA1[Service B panggil Service A] --> SA2[GET /api/v1/mahasiswa/nim]
+        SA2 --> SA3[Return detail mahasiswa nama prodi status]
+        SA3 --> SA4{Status mahasiswa aktif?}
+        SA4 -->|aktif| SA5[OK lanjut ke Service C]
+        SA4 -->|tidak aktif| SAX((KRS ditolak))
+        SA2 -.- SA6[Alternatif admin: POST /api/v1/mahasiswa catat mahasiswa baru]
+    end
+
+    subgraph SC1["Service C - Sub Proses 2a Cek Nilai IPS"]
+        direction LR
+        SC1A[Service B panggil Service C] --> SC1B[GET /api/v1/nilai/nim]
+        SC1B --> SC1C[Header X-IAE-KEY 102022580023]
+        SC1C --> SC1D[Ambil nilai semester lalu dari MySQL C]
+        SC1D --> SC1E[Hitung IPS Indeks Prestasi Semester]
+        SC1E --> SC1F{IPS memenuhi syarat ambil matkul?}
+        SC1F -->|memenuhi| SC1G[OK lanjut cek kurikulum]
+        SC1F -->|tidak memenuhi| SC1X((KRS ditolak))
+    end
+
+    subgraph SC2["Service C - Sub Proses 2b Cek Kurikulum"]
+        direction LR
+        SC2A[GET /api/v1/kurikulum/kode] --> SC2B[Header X-IAE-KEY 102022580023]
+        SC2B --> SC2C[Return kode nama sks semester prasyarat]
+        SC2C --> SC2D{Matkul ada di kurikulum prodi?}
+        SC2D -->|valid| SC2E{Prasyarat matkul terpenuhi?}
+        SC2E -->|ya| SC2F[OK kembali ke Service B]
+        SC2D -->|tidak valid| SC2X((KRS ditolak))
+        SC2E -->|tidak| SC2X2((KRS ditolak))
+    end
+
+    P0T --> SB1
+    SB2 --> SA1
+    SA5 --> SC1A
+    SC1G --> SC2A
+    SC2F --> SB3
+
+    SC1B -.- SCN1[Studi kasus TIM-09 NIM 102022580023]
+    SC2A -.- SCN2[Dipanggil Service B bukan user langsung]

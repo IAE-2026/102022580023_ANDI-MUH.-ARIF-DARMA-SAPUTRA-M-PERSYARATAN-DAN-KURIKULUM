@@ -1,0 +1,28 @@
+%%{init: {'theme':'base', 'themeVariables': {'background':'#ffffff', 'primaryColor':'#fce4ec', 'lineColor':'#333333'}}}%%
+flowchart LR
+    subgraph Dosen["Dosen / Admin"]
+        direction LR
+        S((Start)) --> D1[Input nilai setelah semester selesai]
+    end
+
+    subgraph SC["Service C - Nilai dan Kurikulum"]
+        direction LR
+        C1[POST /api/v1/nilai] --> C2[Simpan ke database]
+        C2 --> C3[SOAP audit NilaiRecorded]
+        C3 --> C4[Publish nilai.recorded]
+        C4 --> C5((Nilai tercatat))
+    end
+
+    subgraph SA["Service A - Data Mahasiswa"]
+        direction LR
+        A1[GET /mahasiswa/nim] --> A2{Mahasiswa aktif?}
+        A2 -->|aktif| A3[OK lanjut simpan]
+        A2 -->|tidak| AX((Input ditolak))
+    end
+
+    D1 --> C1
+    C1 --> A1
+    A3 --> C2
+
+    C1 -.- N1[Sub proses 2]
+    C3 -.- N2[Transaksi kritis Tugas 3]

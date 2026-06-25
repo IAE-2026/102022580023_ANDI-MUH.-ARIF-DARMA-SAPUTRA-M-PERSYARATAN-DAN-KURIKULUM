@@ -1,0 +1,30 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontSize 10
+
+|Dosen Admin|
+start
+:Input nilai setelah semester selesai;
+
+|Service C|
+:POST /api/v1/nilai;
+note right: Sub proses 2\nTransaksi kritis Tugas 3
+
+|Service A|
+:GET /api/v1/mahasiswa/nim;
+if (Mahasiswa aktif?) then (aktif)
+else (tidak aktif)
+  :Input nilai ditolak;
+  stop
+endif
+
+|Service C|
+:Simpan nilai ke database;
+:SOAP audit NilaiRecorded;
+:Publish nilai.recorded;
+:Nilai tercatat;
+stop
+
+@enduml

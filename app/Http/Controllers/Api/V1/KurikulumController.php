@@ -53,7 +53,11 @@ class KurikulumController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: "Unauthorized - API Key tidak valid"),
+            new OA\Response(
+                response: 401,
+                description: "Unauthorized - API Key tidak valid",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
         ]
     )]
     public function index()
@@ -106,11 +110,23 @@ class KurikulumController extends Controller
                                 new OA\Property(property: "deskripsi", type: "string", nullable: true, example: "Mata kuliah dasar pemrograman"),
                             ]
                         ),
+                        new OA\Property(
+                            property: "meta",
+                            ref: "#/components/schemas/IaeT2Meta"
+                        ),
                     ]
                 )
             ),
-            new OA\Response(response: 404, description: "Kurikulum tidak ditemukan"),
-            new OA\Response(response: 401, description: "Unauthorized - API Key tidak valid"),
+            new OA\Response(
+                response: 404,
+                description: "Kurikulum tidak ditemukan",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthorized - API Key tidak valid",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
         ]
     )]
     public function show(string $kode)

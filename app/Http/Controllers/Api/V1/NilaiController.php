@@ -62,7 +62,11 @@ class NilaiController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: "Unauthorized - API Key tidak valid"),
+            new OA\Response(
+                response: 401,
+                description: "Unauthorized - API Key tidak valid",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
         ]
     )]
     public function index()
@@ -125,11 +129,23 @@ class NilaiController extends Controller
                                 ),
                             ]
                         ),
+                        new OA\Property(
+                            property: "meta",
+                            ref: "#/components/schemas/IaeT2Meta"
+                        ),
                     ]
                 )
             ),
-            new OA\Response(response: 404, description: "Data nilai mahasiswa tidak ditemukan"),
-            new OA\Response(response: 401, description: "Unauthorized - API Key tidak valid"),
+            new OA\Response(
+                response: 404,
+                description: "Data nilai mahasiswa tidak ditemukan",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthorized - API Key tidak valid",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
         ]
     )]
     public function show(string $nim)
@@ -202,14 +218,38 @@ class NilaiController extends Controller
                                 new OA\Property(property: "event_published", type: "boolean", example: true),
                             ]
                         ),
+                        new OA\Property(
+                            property: "meta",
+                            ref: "#/components/schemas/IaeT2Meta"
+                        ),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: "Validasi gagal"),
-            new OA\Response(response: 400, description: "Mahasiswa tidak aktif atau tidak ditemukan di Service A"),
-            new OA\Response(response: 401, description: "Unauthorized - API Key atau JWT tidak valid"),
-            new OA\Response(response: 403, description: "Forbidden - Role tidak diizinkan"),
-            new OA\Response(response: 502, description: "Integrasi SOAP/RabbitMQ gagal"),
+            new OA\Response(
+                response: 422,
+                description: "Validasi gagal",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Mahasiswa tidak aktif atau tidak ditemukan di Service A",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthorized - API Key atau JWT tidak valid",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Forbidden - Role tidak diizinkan",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
+            new OA\Response(
+                response: 502,
+                description: "Integrasi SOAP/RabbitMQ gagal",
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
+            ),
         ]
     )]
     public function store(Request $request)
