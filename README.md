@@ -16,6 +16,16 @@
 
 Ikuti langkah berikut **berurutan** agar service dapat dijalankan dan discan sesuai rubrik IAE-T2.
 
+### Cara cepat (disarankan)
+
+```bash
+git clone https://github.com/IAE-2026/102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM.git
+cd 102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM
+./setup.sh
+```
+
+Script `setup.sh` otomatis menjalankan: `composer install` → buat `.env` → **reset volume MySQL** → `docker compose up` → `key:generate` → `migrate:fresh --seed`.
+
 ### Prasyarat
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) sudah **Running**
@@ -66,14 +76,11 @@ L5_SWAGGER_CONST_HOST=http://localhost:8000
 ### Langkah 4 — Jalankan Docker Compose
 
 ```bash
-docker compose up -d --build
+docker compose down -v
+docker compose up -d --build --wait
 ```
 
-Tunggu sampai container `laravel.test` dan `mysql` status **running**:
-
-```bash
-docker compose ps
-```
+> **Penting:** `docker compose down -v` wajib dijalankan saat setup pertama kali atau jika pernah menjalankan `docker compose up` sebelum `.env` siap. Tanpa `-v`, volume MySQL lama (dengan password berbeda) akan dipakai ulang dan menyebabkan error `Access denied for user 'sail'`.
 
 ### Langkah 5 — Generate APP_KEY & setup database
 
@@ -305,19 +312,29 @@ curl -X POST http://localhost:8000/graphql \
 
 ### Error: `Access denied for user 'sail'`
 
-MySQL di Docker **hanya membuat user & password saat volume pertama kali dibuat**. Jika `.env` diubah setelah container pernah jalan (misalnya setelah `cp .env.example .env`), kredensial di `.env` tidak otomatis sinkron dengan data MySQL yang sudah ada.
+Penyebab umum: volume MySQL Docker (`sail-mysql`) sudah pernah dibuat dengan password **berbeda** dari `.env` saat ini. Ini sering terjadi jika:
 
-**Solusi — reset volume MySQL** (data lokal akan hilang, seed akan mengisi ulang):
+- `docker compose up` dijalankan **sebelum** `cp .env.example .env`
+- Clone repo ke folder lain tapi **nama folder sama** → Docker Compose pakai volume lama yang sama
+- `.env` diubah setelah MySQL sudah pernah jalan
+
+MySQL **hanya** membuat user & password saat volume **pertama kali** dibuat. Mengganti `.env` saja tidak mengubah password di dalam volume.
+
+**Solusi:**
 
 ```bash
 docker compose down -v
 cp .env.example .env
-docker compose up -d --build
+docker compose up -d --build --wait
 docker compose exec laravel.test php artisan key:generate
 docker compose exec laravel.test php artisan migrate:fresh --seed
 ```
 
-> Pastikan `cp .env.example .env` dijalankan **sebelum** `docker compose up`, agar MySQL terinisialisasi dengan kredensial yang benar dari awal.
+Atau cukup jalankan ulang:
+
+```bash
+./setup.sh
+```
 
 ---
 
