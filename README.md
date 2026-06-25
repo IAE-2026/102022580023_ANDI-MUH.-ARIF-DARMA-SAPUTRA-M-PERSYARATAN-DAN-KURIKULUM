@@ -14,18 +14,6 @@
 
 ## Panduan untuk Dosen / Penilai
 
-Ikuti langkah berikut **berurutan** agar service dapat dijalankan dan discan sesuai rubrik IAE-T2.
-
-### Cara cepat (disarankan)
-
-```bash
-git clone https://github.com/IAE-2026/102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM.git
-cd 102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM
-./setup.sh
-```
-
-Script `setup.sh` otomatis menjalankan: `composer install` → buat `.env` → **reset volume MySQL** → `docker compose up` → `key:generate` → `migrate:fresh --seed`.
-
 ### Prasyarat
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) sudah **Running**
@@ -33,28 +21,60 @@ Script `setup.sh` otomatis menjalankan: `composer install` → buat `.env` → *
 - Composer terinstall ([getcomposer.org](https://getcomposer.org/))
 - Port `8000` tidak dipakai aplikasi lain
 
-### Langkah 1 — Clone repository
+---
+
+### Cara cepat (disarankan)
+
+```bash
+git clone https://github.com/IAE-2026/102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM.git
+cd 102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM
+chmod +x setup.sh
+./setup.sh
+```
+
+Script `setup.sh` menjalankan 7 langkah otomatis:
+
+| Langkah | Perintah |
+|---|---|
+| 1 | `composer install` |
+| 2 | Buat/sesuaikan `.env` (MySQL + `CACHE_STORE=file`) |
+| 3 | `docker compose down -v` — reset volume MySQL lama |
+| 4 | `docker compose up -d --build` |
+| 5 | Tunggu MySQL siap (retry hingga 60 detik) |
+| 6 | `php artisan key:generate` + `config:clear` |
+| 7 | `php artisan migrate:fresh --seed` |
+
+Setelah selesai, buka:
+
+- Swagger UI → http://localhost:8000/api/documentation
+- GraphiQL → http://localhost:8000/graphiql
+
+---
+
+### Cara manual (langkah demi langkah)
+
+#### Langkah 1 — Clone repository
 
 ```bash
 git clone https://github.com/IAE-2026/102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM.git
 cd 102022580023_ANDI-MUH.-ARIF-DARMA-SAPUTRA-M-PERSYARATAN-DAN-KURIKULUM
 ```
 
-### Langkah 2 — Install dependency PHP
+#### Langkah 2 — Install dependency PHP
 
-Wajib dijalankan **sebelum** `docker compose up`, karena image Docker membutuhkan folder `vendor/`.
+Wajib **sebelum** `docker compose up`, karena image Docker membutuhkan folder `vendor/`.
 
 ```bash
 composer install
 ```
 
-### Langkah 3 — Siapkan file environment
+#### Langkah 3 — Siapkan file environment
 
 ```bash
 cp .env.example .env
 ```
 
-File `.env.example` sudah dikonfigurasi untuk **MySQL + Docker**. Pastikan bagian berikut ada:
+Pastikan konfigurasi berikut ada di `.env`:
 
 ```env
 APP_URL=http://localhost:8000
@@ -67,31 +87,44 @@ DB_DATABASE=laravel
 DB_USERNAME=sail
 DB_PASSWORD=password
 
+CACHE_STORE=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
+
 SERVICE_NAME=Prasyarat-Kurikulum-Service
 IAE_API_NIM=102022580023
 L5_SWAGGER_GENERATE_ALWAYS=true
 L5_SWAGGER_CONST_HOST=http://localhost:8000
 ```
 
-### Langkah 4 — Jalankan Docker Compose
+> `CACHE_STORE=file` mencegah error GraphQL `Table cache doesn't exist` sebelum migrate selesai.
+
+#### Langkah 4 — Jalankan Docker Compose
 
 ```bash
 docker compose down -v
-docker compose up -d --build --wait
+docker compose up -d --build
 ```
 
-> **Penting:** `docker compose down -v` wajib dijalankan saat setup pertama kali atau jika pernah menjalankan `docker compose up` sebelum `.env` siap. Tanpa `-v`, volume MySQL lama (dengan password berbeda) akan dipakai ulang dan menyebabkan error `Access denied for user 'sail'`.
+Tunggu MySQL siap (~30 detik), lalu cek:
 
-### Langkah 5 — Generate APP_KEY & setup database
+```bash
+docker compose ps
+```
+
+> **Penting:** `docker compose down -v` wajib saat setup pertama kali atau jika pernah menjalankan `docker compose up` **sebelum** `.env` siap. Tanpa `-v`, volume MySQL lama (password berbeda) akan dipakai ulang → error `Access denied for user 'sail'`.
+
+#### Langkah 5 — Generate APP_KEY & setup database
 
 ```bash
 docker compose exec laravel.test php artisan key:generate
+docker compose exec laravel.test php artisan config:clear
 docker compose exec laravel.test php artisan migrate:fresh --seed
 ```
 
 > Gunakan `migrate:fresh --seed` (bukan `migrate --seed`) agar tidak terjadi error duplicate data.
 
-### Langkah 6 — Verifikasi service hidup
+#### Langkah 6 — Verifikasi service hidup
 
 | Cek | URL | Harus |
 |---|---|---|
@@ -102,7 +135,7 @@ docker compose exec laravel.test php artisan migrate:fresh --seed
 | GraphQL Playground | http://localhost:8000/graphiql | UI tampil, bisa jalankan query |
 | GraphQL endpoint | http://localhost:8000/graphql | HTTP 200 + JSON `"status":"success"` |
 
-### Langkah 7 — Tes REST API (IAE-T2)
+#### Langkah 7 — Tes REST API (IAE-T2)
 
 **GET — tanpa key (harus 401):**
 
@@ -156,27 +189,41 @@ curl -i -X POST http://localhost:8000/api/v1/nilai \
   }'
 ```
 
-### Langkah 8 — Tes via Swagger UI
+#### Langkah 8 — Tes GraphQL
+
+**GET endpoint (health check — harus HTTP 200):**
+
+```bash
+curl -i http://localhost:8000/graphql
+```
+
+**POST dengan query (harus mengembalikan data):**
+
+```bash
+curl -X POST http://localhost:8000/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ kurikulums { kode_matkul nama_matkul sks } }"}'
+```
+
+**Via GraphiQL:** buka http://localhost:8000/graphiql, jalankan query, klik Execute.
+
+#### Langkah 9 — Tes via Swagger UI
 
 1. Buka http://localhost:8000/api/documentation
 2. Klik **Authorize** → isi `102022580023` pada **X-IAE-KEY**
-3. Coba endpoint **GET /api/v1/kurikulum** → Execute → harus **200**
+3. Coba **GET /api/v1/kurikulum** → Execute → harus **200**
 4. Coba **POST /api/v1/nilai** dengan body JSON → harus **201**
 
-### Menstop service
+#### Menstop service
 
 ```bash
 docker compose down
 ```
 
-### Alternatif: Laravel Sail
-
-Jika lebih nyaman memakai Sail, langkah setara:
+Hapus sekalian volume MySQL (reset database):
 
 ```bash
-./vendor/bin/sail up -d --build
-./vendor/bin/sail artisan key:generate
-./vendor/bin/sail artisan migrate:fresh --seed
+docker compose down -v
 ```
 
 ---
@@ -248,18 +295,22 @@ Content-Type: application/json   (khusus POST/PUT/PATCH)
 
 ## GraphQL
 
-**Playground (UI interaktif):** http://localhost:8000/graphiql
+| URL | Fungsi |
+|---|---|
+| `/graphiql` | UI interaktif untuk mengetik & menjalankan query |
+| `/graphql` | Endpoint API GraphQL |
 
-**Endpoint API:** http://localhost:8000/graphql
+GET `/graphql` tanpa query mengembalikan **HTTP 200** dengan JSON:
 
-Akses GET `/graphql` tanpa query akan merespons **HTTP 200** (bukan error). Di browser, otomatis redirect ke `/graphiql`. Untuk menjalankan query, gunakan GraphiQL atau kirim POST JSON.
-
-**Tes endpoint via curl:**
-
-```bash
-curl -X POST http://localhost:8000/graphql \
-  -H "Content-Type: application/json" \
-  -d '{"query":"{ kurikulums { kode_matkul nama_matkul sks } }"}'
+```json
+{
+  "status": "success",
+  "message": "GraphQL endpoint aktif.",
+  "data": {
+    "endpoint": "http://localhost:8000/graphql",
+    "playground": "http://localhost:8000/graphiql"
+  }
+}
 ```
 
 **Contoh query di GraphiQL:**
@@ -291,7 +342,7 @@ curl -X POST http://localhost:8000/graphql \
 
 - Laravel 12 (PHP 8.5)
 - MySQL 8.4
-- Docker Compose (Laravel Sail)
+- Docker Compose (Laravel Sail) — project name: `iae-kurikulum-102022580023`
 - L5-Swagger (OpenAPI 3.0)
 - Lighthouse GraphQL + GraphiQL
 
@@ -305,37 +356,38 @@ curl -X POST http://localhost:8000/graphql \
 | Build gagal / vendor tidak ada | Jalankan `composer install` dulu |
 | Error koneksi MySQL | Pastikan `.env` pakai `DB_HOST=mysql`, bukan `127.0.0.1` |
 | Duplicate entry saat seed | Pakai `migrate:fresh --seed`, bukan `migrate --seed` |
-| `Access denied for user 'sail'` | Volume MySQL masih pakai password lama — lihat solusi di bawah |
-| GraphQL error `must include query` | Sudah ditangani — refresh halaman `/graphql` atau buka `/graphiql` |
-| GraphQL `Table cache doesn't exist` | Jalankan `./setup.sh` atau `migrate:fresh --seed`; pastikan `.env` pakai `CACHE_STORE=file` |
-| `Connection refused` saat migrate | MySQL belum siap — tunggu 30 detik lalu ulangi, atau jalankan `./setup.sh` |
+| `Access denied for user 'sail'` | Jalankan `./setup.sh` atau lihat solusi di bawah |
+| `Connection refused` saat migrate | MySQL belum siap — jalankan `./setup.sh` (sudah ada wait otomatis) |
+| GraphQL `Table cache doesn't exist` | Pastikan `.env` pakai `CACHE_STORE=file`, lalu `config:clear` |
+| GraphQL error `must include query` | Normal jika versi lama — update repo & refresh `/graphql` |
 | Swagger "Failed to load API definition" | Pastikan `/api/docs` → HTTP 200, lalu refresh browser |
 | Port 8000 sudah dipakai | Ubah `APP_PORT=8001` di `.env`, lalu `docker compose up -d` |
 
 ### Error: `Access denied for user 'sail'`
 
-Penyebab umum: volume MySQL Docker (`sail-mysql`) sudah pernah dibuat dengan password **berbeda** dari `.env` saat ini. Ini sering terjadi jika:
+Volume MySQL Docker hanya membuat user & password saat **pertama kali** dibuat. Jika `.env` diubah setelah MySQL pernah jalan, password di volume tidak ikut berubah.
 
-- `docker compose up` dijalankan **sebelum** `cp .env.example .env`
-- Clone repo ke folder lain tapi **nama folder sama** → Docker Compose pakai volume lama yang sama
-- `.env` diubah setelah MySQL sudah pernah jalan
+Penyebab umum:
 
-MySQL **hanya** membuat user & password saat volume **pertama kali** dibuat. Mengganti `.env` saja tidak mengubah password di dalam volume.
+- `docker compose up` dijalankan sebelum `cp .env.example .env`
+- Clone ke folder lain dengan **nama folder sama** → volume lama terpakai ulang
 
-**Solusi:**
+**Solusi tercepat:**
+
+```bash
+./setup.sh
+```
+
+**Solusi manual:**
 
 ```bash
 docker compose down -v
 cp .env.example .env
-docker compose up -d --build --wait
+docker compose up -d --build
+# tunggu ~30 detik
 docker compose exec laravel.test php artisan key:generate
+docker compose exec laravel.test php artisan config:clear
 docker compose exec laravel.test php artisan migrate:fresh --seed
-```
-
-Atau cukup jalankan ulang:
-
-```bash
-./setup.sh
 ```
 
 ---
