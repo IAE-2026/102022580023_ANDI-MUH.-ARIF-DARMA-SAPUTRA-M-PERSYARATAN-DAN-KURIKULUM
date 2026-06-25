@@ -307,6 +307,8 @@ curl -X POST http://localhost:8000/graphql \
 | Duplicate entry saat seed | Pakai `migrate:fresh --seed`, bukan `migrate --seed` |
 | `Access denied for user 'sail'` | Volume MySQL masih pakai password lama — lihat solusi di bawah |
 | GraphQL error `must include query` | Sudah ditangani — refresh halaman `/graphql` atau buka `/graphiql` |
+| GraphQL `Table cache doesn't exist` | Jalankan `./setup.sh` atau `migrate:fresh --seed`; pastikan `.env` pakai `CACHE_STORE=file` |
+| `Connection refused` saat migrate | MySQL belum siap — tunggu 30 detik lalu ulangi, atau jalankan `./setup.sh` |
 | Swagger "Failed to load API definition" | Pastikan `/api/docs` → HTTP 200, lalu refresh browser |
 | Port 8000 sudah dipakai | Ubah `APP_PORT=8001` di `.env`, lalu `docker compose up -d` |
 
