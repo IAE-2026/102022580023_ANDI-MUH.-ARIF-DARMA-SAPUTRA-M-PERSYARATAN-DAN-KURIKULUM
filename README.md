@@ -336,6 +336,53 @@ GET `/graphql` tanpa query mengembalikan **HTTP 200** dengan JSON:
 }
 ```
 
+**Mutation input nilai (wrapper IAE-T2 otomatis di respons HTTP):**
+
+Cukup kirim input — `status`, `message`, `meta`, dan `data` **muncul otomatis** tanpa perlu ditulis di query. Pilih minimal `id` saja:
+
+```graphql
+mutation InputNilai {
+  createNilai(
+    input: {
+      nim: "102022580023"
+      kode_matkul: "SI501"
+      nama_matkul: "Keamanan Sistem Informasi"
+      nilai_huruf: "A"
+      nilai_angka: 4
+      sks: 3
+      semester: 5
+      tahun_ajaran: "2025/2026"
+    }
+  ) {
+    id
+  }
+}
+```
+
+Respons HTTP otomatis (format IAE-T2):
+
+```json
+{
+  "status": "success",
+  "message": "Nilai mahasiswa berhasil dicatat",
+  "data": {
+    "id": 1,
+    "nim": "102022580023",
+    "kode_matkul": "SI501",
+    "nama_matkul": "Keamanan Sistem Informasi",
+    "nilai_huruf": "A",
+    "nilai_angka": 4,
+    "sks": 3,
+    "semester": 5,
+    "tahun_ajaran": "2025/2026"
+  },
+  "meta": {
+    "service_name": "Prasyarat-Kurikulum-Service",
+    "api_version": "v1"
+  }
+}
+```
+
 ---
 
 ## Stack Teknologi

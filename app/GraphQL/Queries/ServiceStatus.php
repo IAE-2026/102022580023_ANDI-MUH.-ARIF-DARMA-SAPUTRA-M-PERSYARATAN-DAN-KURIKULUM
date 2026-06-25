@@ -2,6 +2,8 @@
 
 namespace App\GraphQL\Queries;
 
+use App\GraphQL\IaeGraphqlResponse;
+
 class ServiceStatus
 {
     /**
@@ -9,14 +11,6 @@ class ServiceStatus
      */
     public function __invoke(mixed $_, array $args): array
     {
-        return [
-            'status' => 'success',
-            'message' => 'Pesan sukses',
-            'data' => (object) [],
-            'meta' => [
-                'service_name' => config('services.iae.service_name', 'Prasyarat-Kurikulum-Service'),
-                'api_version' => 'v1',
-            ],
-        ];
+        return IaeGraphqlResponse::success((object) [], 'Pesan sukses');
     }
 }

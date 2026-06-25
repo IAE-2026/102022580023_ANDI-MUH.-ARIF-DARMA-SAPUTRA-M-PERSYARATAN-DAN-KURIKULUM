@@ -12,6 +12,7 @@ class CreateNilai
 {
     /**
      * Menambahkan data nilai mahasiswa baru (setara POST /api/v1/nilai).
+     * Wrapper IAE-T2 ditambahkan otomatis oleh WrapGraphqlIaeResponse middleware.
      */
     public function __invoke(mixed $_, array $args): Nilai
     {
