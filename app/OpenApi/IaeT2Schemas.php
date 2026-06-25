@@ -6,6 +6,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Schema(
     schema: 'IaeT2Meta',
+    description: 'Metadata standar IAE-T2 Response Wrapper',
     type: 'object',
     properties: [
         new OA\Property(property: 'service_name', type: 'string', example: 'Prasyarat-Kurikulum-Service'),
@@ -14,7 +15,8 @@ use OpenApi\Attributes as OA;
 )]
 #[OA\Schema(
     schema: 'IaeT2SuccessResponse',
-    required: ['status', 'message', 'data'],
+    description: 'IAE-T2 Success Response Wrapper — format: {status, message, data, meta}',
+    required: ['status', 'message', 'data', 'meta'],
     properties: [
         new OA\Property(property: 'status', type: 'string', example: 'success'),
         new OA\Property(property: 'message', type: 'string', example: 'Data retrieved successfully'),
@@ -24,7 +26,8 @@ use OpenApi\Attributes as OA;
 )]
 #[OA\Schema(
     schema: 'IaeT2ErrorResponse',
-    required: ['status', 'message'],
+    description: 'IAE-T2 Error Response Wrapper — format: {status, message, errors}',
+    required: ['status', 'message', 'errors'],
     properties: [
         new OA\Property(property: 'status', type: 'string', example: 'error'),
         new OA\Property(property: 'message', type: 'string', example: 'Detail pesan kesalahan'),

@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Service C - Prasyarat dan Kurikulum API",
-        "description": "API untuk validasi prasyarat dan kurikulum mahasiswa. Service ini menyediakan akses data nilai mahasiswa, IPS semester, dan detail kurikulum.",
+        "description": "API Service C mengikuti standar IAE-T2 Response Wrapper. Semua endpoint REST /api/v1/* wajib membungkus respons dengan format IAE-T2 (success: status, message, data, meta; error: status, message, errors). Semua request dan response REST wajib menggunakan Content-Type: application/json; charset=UTF-8.",
         "contact": {
             "name": "Andi Muh. Arif Darma Saputra M",
             "email": "102022580023@student.telkomuniversity.ac.id"
@@ -22,90 +22,39 @@
                     "Kurikulum"
                 ],
                 "summary": "Lihat daftar semua kurikulum",
-                "description": "Mengambil daftar seluruh mata kuliah dalam kurikulum. Endpoint ini berfungsi sebagai Collection.",
+                "description": "Mengambil daftar seluruh mata kuliah dalam kurikulum. Response mengikuti IAE-T2 Success Response Wrapper.",
                 "operationId": "getKurikulumList",
                 "responses": {
                     "200": {
-                        "description": "Berhasil mengambil daftar kurikulum",
+                        "description": "IAE-T2 Success Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Data kurikulum berhasil diambil"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer",
-                                                        "example": 1
-                                                    },
-                                                    "kode_matkul": {
-                                                        "type": "string",
-                                                        "example": "SI101"
-                                                    },
-                                                    "nama_matkul": {
-                                                        "type": "string",
-                                                        "example": "Algoritma dan Pemrograman"
-                                                    },
-                                                    "sks": {
-                                                        "type": "integer",
-                                                        "example": 3
-                                                    },
-                                                    "semester": {
-                                                        "type": "integer",
-                                                        "example": 1
-                                                    },
-                                                    "prodi": {
-                                                        "type": "string",
-                                                        "example": "S1 Sistem Informasi"
-                                                    },
-                                                    "prasyarat": {
-                                                        "type": "string",
-                                                        "example": null,
-                                                        "nullable": true
-                                                    },
-                                                    "deskripsi": {
-                                                        "type": "string",
-                                                        "example": "Mata kuliah dasar pemrograman",
-                                                        "nullable": true
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
-                                        },
-                                        "meta": {
-                                            "properties": {
-                                                "service_name": {
-                                                    "type": "string",
-                                                    "example": "Prasyarat-Kurikulum-Service"
-                                                },
-                                                "api_version": {
-                                                    "type": "string",
-                                                    "example": "v1"
-                                                },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "example": 10
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/IaeT2SuccessResponse"
                                 }
                             }
                         }
                     },
                     "401": {
-                        "description": "Unauthorized - API Key tidak valid",
+                        "description": "IAE-T2 Error Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -128,7 +77,7 @@
                     "Kurikulum"
                 ],
                 "summary": "Lihat detail kurikulum berdasarkan kode matkul",
-                "description": "Mengambil detail mata kuliah spesifik berdasarkan kode matkul. Dipanggil oleh Service B untuk validasi matkul.",
+                "description": "Mengambil detail mata kuliah spesifik berdasarkan kode matkul. Response mengikuti IAE-T2 Success Response Wrapper.",
                 "operationId": "getKurikulumByKode",
                 "parameters": [
                     {
@@ -144,69 +93,35 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Berhasil mengambil detail kurikulum",
+                        "description": "IAE-T2 Success Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Detail kurikulum berhasil diambil"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "kode_matkul": {
-                                                    "type": "string",
-                                                    "example": "SI101"
-                                                },
-                                                "nama_matkul": {
-                                                    "type": "string",
-                                                    "example": "Algoritma dan Pemrograman"
-                                                },
-                                                "sks": {
-                                                    "type": "integer",
-                                                    "example": 3
-                                                },
-                                                "semester": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "prodi": {
-                                                    "type": "string",
-                                                    "example": "S1 Sistem Informasi"
-                                                },
-                                                "prasyarat": {
-                                                    "type": "string",
-                                                    "example": null,
-                                                    "nullable": true
-                                                },
-                                                "deskripsi": {
-                                                    "type": "string",
-                                                    "example": "Mata kuliah dasar pemrograman",
-                                                    "nullable": true
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "meta": {
-                                            "$ref": "#/components/schemas/IaeT2Meta"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/IaeT2SuccessResponse"
                                 }
                             }
                         }
                     },
                     "404": {
-                        "description": "Kurikulum tidak ditemukan",
+                        "description": "IAE-T2 Error Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -216,7 +131,16 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthorized - API Key tidak valid",
+                        "description": "IAE-T2 Error Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -239,88 +163,39 @@
                     "Nilai"
                 ],
                 "summary": "Lihat daftar semua nilai",
-                "description": "Mengambil daftar seluruh nilai mahasiswa. Endpoint ini berfungsi sebagai Collection.",
+                "description": "Mengambil daftar seluruh nilai mahasiswa. Response mengikuti IAE-T2 Success Response Wrapper.",
                 "operationId": "getNilaiList",
                 "responses": {
                     "200": {
-                        "description": "Berhasil mengambil daftar nilai",
+                        "description": "IAE-T2 Success Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Data nilai berhasil diambil"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "nim": {
-                                                        "type": "string",
-                                                        "example": "102022400136"
-                                                    },
-                                                    "kode_matkul": {
-                                                        "type": "string",
-                                                        "example": "SI101"
-                                                    },
-                                                    "nama_matkul": {
-                                                        "type": "string",
-                                                        "example": "Algoritma dan Pemrograman"
-                                                    },
-                                                    "nilai_huruf": {
-                                                        "type": "string",
-                                                        "example": "A"
-                                                    },
-                                                    "nilai_angka": {
-                                                        "type": "number",
-                                                        "example": 4
-                                                    },
-                                                    "sks": {
-                                                        "type": "integer",
-                                                        "example": 3
-                                                    },
-                                                    "semester": {
-                                                        "type": "integer",
-                                                        "example": 1
-                                                    },
-                                                    "tahun_ajaran": {
-                                                        "type": "string",
-                                                        "example": "2024/2025"
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
-                                        },
-                                        "meta": {
-                                            "properties": {
-                                                "service_name": {
-                                                    "type": "string",
-                                                    "example": "Prasyarat-Kurikulum-Service"
-                                                },
-                                                "api_version": {
-                                                    "type": "string",
-                                                    "example": "v1"
-                                                },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "example": 5
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/IaeT2SuccessResponse"
                                 }
                             }
                         }
                     },
                     "401": {
-                        "description": "Unauthorized - API Key tidak valid",
+                        "description": "IAE-T2 Error Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -341,9 +216,10 @@
                     "Nilai"
                 ],
                 "summary": "Catat nilai mahasiswa setelah semester selesai",
-                "description": "Menambahkan data nilai mahasiswa baru.",
+                "description": "Menambahkan data nilai mahasiswa baru. Request wajib Content-Type: application/json. Response mengikuti IAE-T2 Response Wrapper.",
                 "operationId": "storeNilai",
                 "requestBody": {
+                    "description": "Content-Type: application/json",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -401,55 +277,54 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Nilai berhasil dicatat",
+                        "description": "IAE-T2 Success Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Nilai mahasiswa berhasil dicatat"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 11
-                                                },
-                                                "nim": {
-                                                    "type": "string",
-                                                    "example": "102022580023"
-                                                },
-                                                "kode_matkul": {
-                                                    "type": "string",
-                                                    "example": "SI101"
-                                                },
-                                                "nilai_huruf": {
-                                                    "type": "string",
-                                                    "example": "A"
-                                                },
-                                                "nilai_angka": {
-                                                    "type": "number",
-                                                    "example": 4
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "meta": {
-                                            "$ref": "#/components/schemas/IaeT2Meta"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/IaeT2SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "IAE-T2 Error Response Wrapper — Content-Type bukan application/json",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IaeT2ErrorResponse"
                                 }
                             }
                         }
                     },
                     "422": {
-                        "description": "Validasi gagal",
+                        "description": "IAE-T2 Error Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -459,7 +334,16 @@
                         }
                     },
                     "400": {
-                        "description": "Mahasiswa tidak aktif atau tidak ditemukan di Service A",
+                        "description": "IAE-T2 Error Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -469,7 +353,16 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthorized - API Key tidak valid",
+                        "description": "IAE-T2 Error Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -492,7 +385,7 @@
                     "Nilai"
                 ],
                 "summary": "Lihat nilai dan IPS semester lalu berdasarkan NIM",
-                "description": "Mengambil daftar nilai dan menghitung IPS (Indeks Prestasi Semester) mahasiswa. Dipanggil oleh Service B untuk cek syarat ambil matkul.",
+                "description": "Mengambil daftar nilai dan menghitung IPS mahasiswa. Response mengikuti IAE-T2 Success Response Wrapper.",
                 "operationId": "getNilaiByNim",
                 "parameters": [
                     {
@@ -508,84 +401,35 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Berhasil mengambil nilai mahasiswa",
+                        "description": "IAE-T2 Success Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Data nilai mahasiswa berhasil diambil"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "nim": {
-                                                    "type": "string",
-                                                    "example": "102022400136"
-                                                },
-                                                "ips": {
-                                                    "type": "number",
-                                                    "format": "float",
-                                                    "example": 3.75
-                                                },
-                                                "total_sks": {
-                                                    "type": "integer",
-                                                    "example": 20
-                                                },
-                                                "semester_terakhir": {
-                                                    "type": "integer",
-                                                    "example": 2
-                                                },
-                                                "nilai": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "properties": {
-                                                            "kode_matkul": {
-                                                                "type": "string",
-                                                                "example": "SI101"
-                                                            },
-                                                            "nama_matkul": {
-                                                                "type": "string",
-                                                                "example": "Algoritma dan Pemrograman"
-                                                            },
-                                                            "nilai_huruf": {
-                                                                "type": "string",
-                                                                "example": "A"
-                                                            },
-                                                            "nilai_angka": {
-                                                                "type": "number",
-                                                                "example": 4
-                                                            },
-                                                            "sks": {
-                                                                "type": "integer",
-                                                                "example": 3
-                                                            },
-                                                            "semester": {
-                                                                "type": "integer",
-                                                                "example": 1
-                                                            }
-                                                        },
-                                                        "type": "object"
-                                                    }
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "meta": {
-                                            "$ref": "#/components/schemas/IaeT2Meta"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/IaeT2SuccessResponse"
                                 }
                             }
                         }
                     },
                     "404": {
-                        "description": "Data nilai mahasiswa tidak ditemukan",
+                        "description": "IAE-T2 Error Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -595,7 +439,16 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthorized - API Key tidak valid",
+                        "description": "IAE-T2 Error Response Wrapper",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Content-Type: application/json; charset=UTF-8",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/json; charset=UTF-8"
+                                }
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -616,6 +469,7 @@
     "components": {
         "schemas": {
             "IaeT2Meta": {
+                "description": "Metadata standar IAE-T2 Response Wrapper",
                 "properties": {
                     "service_name": {
                         "type": "string",
@@ -629,10 +483,12 @@
                 "type": "object"
             },
             "IaeT2SuccessResponse": {
+                "description": "IAE-T2 Success Response Wrapper — format: {status, message, data, meta}",
                 "required": [
                     "status",
                     "message",
-                    "data"
+                    "data",
+                    "meta"
                 ],
                 "properties": {
                     "status": {
@@ -651,9 +507,11 @@
                 "type": "object"
             },
             "IaeT2ErrorResponse": {
+                "description": "IAE-T2 Error Response Wrapper — format: {status, message, errors}",
                 "required": [
                     "status",
-                    "message"
+                    "message",
+                    "errors"
                 ],
                 "properties": {
                     "status": {

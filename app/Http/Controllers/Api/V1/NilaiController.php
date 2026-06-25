@@ -15,49 +15,33 @@ class NilaiController extends Controller
     #[OA\Get(
         path: "/api/v1/nilai",
         summary: "Lihat daftar semua nilai",
-        description: "Mengambil daftar seluruh nilai mahasiswa. Endpoint ini berfungsi sebagai Collection.",
+        description: "Mengambil daftar seluruh nilai mahasiswa. Response mengikuti IAE-T2 Success Response Wrapper.",
         operationId: "getNilaiList",
         tags: ["Nilai"],
         security: [["X-IAE-KEY" => []]],
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Berhasil mengambil daftar nilai",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "status", type: "string", example: "success"),
-                        new OA\Property(property: "message", type: "string", example: "Data nilai berhasil diambil"),
-                        new OA\Property(
-                            property: "data",
-                            type: "array",
-                            items: new OA\Items(
-                                properties: [
-                                    new OA\Property(property: "nim", type: "string", example: "102022400136"),
-                                    new OA\Property(property: "kode_matkul", type: "string", example: "SI101"),
-                                    new OA\Property(property: "nama_matkul", type: "string", example: "Algoritma dan Pemrograman"),
-                                    new OA\Property(property: "nilai_huruf", type: "string", example: "A"),
-                                    new OA\Property(property: "nilai_angka", type: "number", example: 4.0),
-                                    new OA\Property(property: "sks", type: "integer", example: 3),
-                                    new OA\Property(property: "semester", type: "integer", example: 1),
-                                    new OA\Property(property: "tahun_ajaran", type: "string", example: "2024/2025"),
-                                ]
-                            )
-                        ),
-                        new OA\Property(
-                            property: "meta",
-                            type: "object",
-                            properties: [
-                                new OA\Property(property: "service_name", type: "string", example: "Prasyarat-Kurikulum-Service"),
-                                new OA\Property(property: "api_version", type: "string", example: "v1"),
-                                new OA\Property(property: "total", type: "integer", example: 5),
-                            ]
-                        ),
-                    ]
-                )
+                description: "IAE-T2 Success Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2SuccessResponse")
             ),
             new OA\Response(
                 response: 401,
-                description: "Unauthorized - API Key tidak valid",
+                description: "IAE-T2 Error Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
         ]
@@ -77,7 +61,7 @@ class NilaiController extends Controller
     #[OA\Get(
         path: "/api/v1/nilai/{nim}",
         summary: "Lihat nilai dan IPS semester lalu berdasarkan NIM",
-        description: "Mengambil daftar nilai dan menghitung IPS (Indeks Prestasi Semester) mahasiswa. Dipanggil oleh Service B untuk cek syarat ambil matkul.",
+        description: "Mengambil daftar nilai dan menghitung IPS mahasiswa. Response mengikuti IAE-T2 Success Response Wrapper.",
         operationId: "getNilaiByNim",
         tags: ["Nilai"],
         security: [["X-IAE-KEY" => []]],
@@ -93,50 +77,38 @@ class NilaiController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Berhasil mengambil nilai mahasiswa",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "status", type: "string", example: "success"),
-                        new OA\Property(property: "message", type: "string", example: "Data nilai mahasiswa berhasil diambil"),
-                        new OA\Property(
-                            property: "data",
-                            type: "object",
-                            properties: [
-                                new OA\Property(property: "nim", type: "string", example: "102022400136"),
-                                new OA\Property(property: "ips", type: "number", format: "float", example: 3.75),
-                                new OA\Property(property: "total_sks", type: "integer", example: 20),
-                                new OA\Property(property: "semester_terakhir", type: "integer", example: 2),
-                                new OA\Property(
-                                    property: "nilai",
-                                    type: "array",
-                                    items: new OA\Items(
-                                        properties: [
-                                            new OA\Property(property: "kode_matkul", type: "string", example: "SI101"),
-                                            new OA\Property(property: "nama_matkul", type: "string", example: "Algoritma dan Pemrograman"),
-                                            new OA\Property(property: "nilai_huruf", type: "string", example: "A"),
-                                            new OA\Property(property: "nilai_angka", type: "number", example: 4.0),
-                                            new OA\Property(property: "sks", type: "integer", example: 3),
-                                            new OA\Property(property: "semester", type: "integer", example: 1),
-                                        ]
-                                    )
-                                ),
-                            ]
-                        ),
-                        new OA\Property(
-                            property: "meta",
-                            ref: "#/components/schemas/IaeT2Meta"
-                        ),
-                    ]
-                )
+                description: "IAE-T2 Success Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2SuccessResponse")
             ),
             new OA\Response(
                 response: 404,
-                description: "Data nilai mahasiswa tidak ditemukan",
+                description: "IAE-T2 Error Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
             new OA\Response(
                 response: 401,
-                description: "Unauthorized - API Key tidak valid",
+                description: "IAE-T2 Error Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
         ]
@@ -149,7 +121,6 @@ class NilaiController extends Controller
             return ApiResponse::error('Data nilai untuk NIM ' . $nim . ' tidak ditemukan', 404);
         }
 
-        // Hitung IPS (Indeks Prestasi Semester) dari semester terakhir
         $semesterTerakhir = $nilais->max('semester');
         $nilaiSemesterAkhir = $nilais->where('semester', $semesterTerakhir);
 
@@ -173,12 +144,13 @@ class NilaiController extends Controller
     #[OA\Post(
         path: "/api/v1/nilai",
         summary: "Catat nilai mahasiswa setelah semester selesai",
-        description: "Menambahkan data nilai mahasiswa baru.",
+        description: "Menambahkan data nilai mahasiswa baru. Request wajib Content-Type: application/json. Response mengikuti IAE-T2 Response Wrapper.",
         operationId: "storeNilai",
         tags: ["Nilai"],
         security: [["X-IAE-KEY" => []]],
         requestBody: new OA\RequestBody(
             required: true,
+            description: "Content-Type: application/json",
             content: new OA\JsonContent(
                 required: ["nim", "kode_matkul", "nama_matkul", "nilai_huruf", "nilai_angka", "sks", "semester", "tahun_ajaran"],
                 properties: [
@@ -196,49 +168,68 @@ class NilaiController extends Controller
         responses: [
             new OA\Response(
                 response: 201,
-                description: "Nilai berhasil dicatat",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "status", type: "string", example: "success"),
-                        new OA\Property(property: "message", type: "string", example: "Nilai mahasiswa berhasil dicatat"),
-                        new OA\Property(
-                            property: "data",
-                            type: "object",
-                            properties: [
-                                new OA\Property(property: "id", type: "integer", example: 11),
-                                new OA\Property(property: "nim", type: "string", example: "102022580023"),
-                                new OA\Property(property: "kode_matkul", type: "string", example: "SI101"),
-                                new OA\Property(property: "nilai_huruf", type: "string", example: "A"),
-                                new OA\Property(property: "nilai_angka", type: "number", example: 4.0),
-                            ]
-                        ),
-                        new OA\Property(
-                            property: "meta",
-                            ref: "#/components/schemas/IaeT2Meta"
-                        ),
-                    ]
-                )
+                description: "IAE-T2 Success Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2SuccessResponse")
+            ),
+            new OA\Response(
+                response: 415,
+                description: "IAE-T2 Error Response Wrapper — Content-Type bukan application/json",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
             new OA\Response(
                 response: 422,
-                description: "Validasi gagal",
+                description: "IAE-T2 Error Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
             new OA\Response(
                 response: 400,
-                description: "Mahasiswa tidak aktif atau tidak ditemukan di Service A",
+                description: "IAE-T2 Error Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
             new OA\Response(
                 response: 401,
-                description: "Unauthorized - API Key tidak valid",
+                description: "IAE-T2 Error Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
         ]
     )]
     public function store(Request $request)
     {
-        // Validasi input
         $validator = Validator::make($request->all(), [
             'nim' => 'required|string',
             'kode_matkul' => 'required|string',
@@ -254,8 +245,6 @@ class NilaiController extends Controller
             return ApiResponse::error('Validasi gagal', 422, $validator->errors()->toArray());
         }
 
-        // Panggil Service A untuk validasi mahasiswa masih aktif
-        // URL Service A (dari teman - sesuaikan dengan URL yang benar)
         $serviceAUrl = env('SERVICE_A_URL', 'http://localhost:8001');
 
         try {
@@ -266,7 +255,6 @@ class NilaiController extends Controller
             if ($response->successful()) {
                 $mahasiswaData = $response->json();
 
-                // Cek apakah status mahasiswa aktif
                 if (isset($mahasiswaData['data']['status']) && strtolower($mahasiswaData['data']['status']) !== 'aktif') {
                     return ApiResponse::error(
                         'Mahasiswa dengan NIM ' . $request->nim . ' tidak berstatus aktif. Status: ' . ($mahasiswaData['data']['status'] ?? 'unknown'),
@@ -274,11 +262,9 @@ class NilaiController extends Controller
                     );
                 }
             } else {
-                // Jika Service A tidak tersedia, log warning tapi tetap lanjut
                 \Log::warning('Service A tidak merespons dengan baik untuk NIM: ' . $request->nim . '. Status: ' . $response->status());
             }
         } catch (\Exception $e) {
-            // Jika Service A tidak bisa dihubungi, log error tapi tetap lanjut
             \Log::warning('Tidak dapat menghubungi Service A: ' . $e->getMessage());
         }
 

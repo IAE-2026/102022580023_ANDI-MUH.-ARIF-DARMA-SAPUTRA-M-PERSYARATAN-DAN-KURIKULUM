@@ -13,49 +13,33 @@ class KurikulumController extends Controller
     #[OA\Get(
         path: "/api/v1/kurikulum",
         summary: "Lihat daftar semua kurikulum",
-        description: "Mengambil daftar seluruh mata kuliah dalam kurikulum. Endpoint ini berfungsi sebagai Collection.",
+        description: "Mengambil daftar seluruh mata kuliah dalam kurikulum. Response mengikuti IAE-T2 Success Response Wrapper.",
         operationId: "getKurikulumList",
         tags: ["Kurikulum"],
         security: [["X-IAE-KEY" => []]],
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Berhasil mengambil daftar kurikulum",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "status", type: "string", example: "success"),
-                        new OA\Property(property: "message", type: "string", example: "Data kurikulum berhasil diambil"),
-                        new OA\Property(
-                            property: "data",
-                            type: "array",
-                            items: new OA\Items(
-                                properties: [
-                                    new OA\Property(property: "id", type: "integer", example: 1),
-                                    new OA\Property(property: "kode_matkul", type: "string", example: "SI101"),
-                                    new OA\Property(property: "nama_matkul", type: "string", example: "Algoritma dan Pemrograman"),
-                                    new OA\Property(property: "sks", type: "integer", example: 3),
-                                    new OA\Property(property: "semester", type: "integer", example: 1),
-                                    new OA\Property(property: "prodi", type: "string", example: "S1 Sistem Informasi"),
-                                    new OA\Property(property: "prasyarat", type: "string", nullable: true, example: null),
-                                    new OA\Property(property: "deskripsi", type: "string", nullable: true, example: "Mata kuliah dasar pemrograman"),
-                                ]
-                            )
-                        ),
-                        new OA\Property(
-                            property: "meta",
-                            type: "object",
-                            properties: [
-                                new OA\Property(property: "service_name", type: "string", example: "Prasyarat-Kurikulum-Service"),
-                                new OA\Property(property: "api_version", type: "string", example: "v1"),
-                                new OA\Property(property: "total", type: "integer", example: 10),
-                            ]
-                        ),
-                    ]
-                )
+                description: "IAE-T2 Success Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2SuccessResponse")
             ),
             new OA\Response(
                 response: 401,
-                description: "Unauthorized - API Key tidak valid",
+                description: "IAE-T2 Error Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
         ]
@@ -75,7 +59,7 @@ class KurikulumController extends Controller
     #[OA\Get(
         path: "/api/v1/kurikulum/{kode}",
         summary: "Lihat detail kurikulum berdasarkan kode matkul",
-        description: "Mengambil detail mata kuliah spesifik berdasarkan kode matkul. Dipanggil oleh Service B untuk validasi matkul.",
+        description: "Mengambil detail mata kuliah spesifik berdasarkan kode matkul. Response mengikuti IAE-T2 Success Response Wrapper.",
         operationId: "getKurikulumByKode",
         tags: ["Kurikulum"],
         security: [["X-IAE-KEY" => []]],
@@ -91,40 +75,38 @@ class KurikulumController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Berhasil mengambil detail kurikulum",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "status", type: "string", example: "success"),
-                        new OA\Property(property: "message", type: "string", example: "Detail kurikulum berhasil diambil"),
-                        new OA\Property(
-                            property: "data",
-                            type: "object",
-                            properties: [
-                                new OA\Property(property: "id", type: "integer", example: 1),
-                                new OA\Property(property: "kode_matkul", type: "string", example: "SI101"),
-                                new OA\Property(property: "nama_matkul", type: "string", example: "Algoritma dan Pemrograman"),
-                                new OA\Property(property: "sks", type: "integer", example: 3),
-                                new OA\Property(property: "semester", type: "integer", example: 1),
-                                new OA\Property(property: "prodi", type: "string", example: "S1 Sistem Informasi"),
-                                new OA\Property(property: "prasyarat", type: "string", nullable: true, example: null),
-                                new OA\Property(property: "deskripsi", type: "string", nullable: true, example: "Mata kuliah dasar pemrograman"),
-                            ]
-                        ),
-                        new OA\Property(
-                            property: "meta",
-                            ref: "#/components/schemas/IaeT2Meta"
-                        ),
-                    ]
-                )
+                description: "IAE-T2 Success Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
+                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2SuccessResponse")
             ),
             new OA\Response(
                 response: 404,
-                description: "Kurikulum tidak ditemukan",
+                description: "IAE-T2 Error Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
             new OA\Response(
                 response: 401,
-                description: "Unauthorized - API Key tidak valid",
+                description: "IAE-T2 Error Response Wrapper",
+                headers: [
+                    new OA\Header(
+                        header: "Content-Type",
+                        description: "Content-Type: application/json; charset=UTF-8",
+                        schema: new OA\Schema(type: "string", example: "application/json; charset=UTF-8")
+                    ),
+                ],
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
         ]

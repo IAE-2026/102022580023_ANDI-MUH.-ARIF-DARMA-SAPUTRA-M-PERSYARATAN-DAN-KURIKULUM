@@ -7,7 +7,7 @@ use OpenApi\Attributes as OA;
 #[OA\Info(
     title: "Service C - Prasyarat dan Kurikulum API",
     version: "1.0.0",
-    description: "API untuk validasi prasyarat dan kurikulum mahasiswa. Service ini menyediakan akses data nilai mahasiswa, IPS semester, dan detail kurikulum.",
+    description: "API Service C mengikuti standar IAE-T2 Response Wrapper. Semua endpoint REST /api/v1/* wajib membungkus respons dengan format IAE-T2 (success: status, message, data, meta; error: status, message, errors). Semua request dan response REST wajib menggunakan Content-Type: application/json; charset=UTF-8.",
     contact: new OA\Contact(
         name: "Andi Muh. Arif Darma Saputra M",
         email: "102022580023@student.telkomuniversity.ac.id"
