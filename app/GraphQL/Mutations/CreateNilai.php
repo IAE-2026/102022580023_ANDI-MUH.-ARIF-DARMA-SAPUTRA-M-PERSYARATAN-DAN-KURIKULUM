@@ -14,7 +14,7 @@ class CreateNilai
      * Menambahkan data nilai mahasiswa baru (setara POST /api/v1/nilai).
      * Wrapper IAE-T2 ditambahkan otomatis oleh WrapGraphqlIaeResponse middleware.
      */
-    public function __invoke(mixed $_, array $args): Nilai
+    public function __invoke(mixed $_, array $args): array
     {
         $input = $args['input'];
 
@@ -36,10 +36,12 @@ class CreateNilai
         $validated = $validator->validated();
         $this->validateMahasiswaAktif($validated['nim']);
 
-        return Nilai::create([
+        $nilai = Nilai::create([
             ...$validated,
             'recorded_by' => config('services.iae.api_nim'),
         ]);
+
+        return $nilai->toArray();
     }
 
     private function validateMahasiswaAktif(string $nim): void

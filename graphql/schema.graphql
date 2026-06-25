@@ -51,7 +51,7 @@ input CreateNilaiInput {
 
 type Mutation {
     "Menambahkan data nilai mahasiswa baru (respons HTTP otomatis dibungkus IAE-T2)."
-    createNilai(input: CreateNilaiInput!): Nilai!
+    createNilai(input: CreateNilaiInput!): JSON!
         @field(resolver: "App\\GraphQL\\Mutations\\CreateNilai")
 }
 
