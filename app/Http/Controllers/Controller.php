@@ -24,13 +24,6 @@ use OpenApi\Attributes as OA;
     name: "X-IAE-KEY",
     description: "Masukkan NIM sebagai API Key (102022580023)"
 )]
-#[OA\SecurityScheme(
-    securityScheme: "bearerAuth",
-    type: "http",
-    scheme: "bearer",
-    bearerFormat: "JWT",
-    description: "Bearer JWT dari IAE SSO (https://iae-sso.virtualfri.id/api/v1/auth/token)"
-)]
 abstract class Controller
 {
     //

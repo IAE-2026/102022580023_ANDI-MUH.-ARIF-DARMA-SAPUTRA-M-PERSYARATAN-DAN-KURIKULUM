@@ -341,7 +341,7 @@
                     "Nilai"
                 ],
                 "summary": "Catat nilai mahasiswa setelah semester selesai",
-                "description": "Menambahkan data nilai mahasiswa baru. Memerlukan Bearer JWT IAE SSO (role dosen/admin). Setelah tersimpan, transaksi diaudit via SOAP legacy dan disebarkan ke RabbitMQ sebagai event nilai.recorded.",
+                "description": "Menambahkan data nilai mahasiswa baru.",
                 "operationId": "storeNilai",
                 "requestBody": {
                     "required": true,
@@ -424,13 +424,17 @@
                                                     "type": "string",
                                                     "example": "102022580023"
                                                 },
-                                                "receipt_number": {
+                                                "kode_matkul": {
                                                     "type": "string",
-                                                    "example": "IAE-LOG-2026-8891A7BC"
+                                                    "example": "SI101"
                                                 },
-                                                "event_published": {
-                                                    "type": "boolean",
-                                                    "example": true
+                                                "nilai_huruf": {
+                                                    "type": "string",
+                                                    "example": "A"
+                                                },
+                                                "nilai_angka": {
+                                                    "type": "number",
+                                                    "example": 4
                                                 }
                                             },
                                             "type": "object"
@@ -465,27 +469,7 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthorized - API Key atau JWT tidak valid",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/IaeT2ErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - Role tidak diizinkan",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/IaeT2ErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "502": {
-                        "description": "Integrasi SOAP/RabbitMQ gagal",
+                        "description": "Unauthorized - API Key tidak valid",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -498,9 +482,6 @@
                 "security": [
                     {
                         "X-IAE-KEY": []
-                    },
-                    {
-                        "bearerAuth": []
                     }
                 ]
             }
@@ -696,12 +677,6 @@
                 "description": "Masukkan NIM sebagai API Key (102022580023)",
                 "name": "X-IAE-KEY",
                 "in": "header"
-            },
-            "bearerAuth": {
-                "type": "http",
-                "description": "Bearer JWT dari IAE SSO (https://iae-sso.virtualfri.id/api/v1/auth/token)",
-                "bearerFormat": "JWT",
-                "scheme": "bearer"
             }
         }
     },

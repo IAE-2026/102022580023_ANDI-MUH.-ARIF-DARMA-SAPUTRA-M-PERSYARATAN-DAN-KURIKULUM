@@ -17,5 +17,5 @@ Route::prefix('v1')->middleware('iae.key')->group(function () {
     // Nilai Routes
     Route::get('/nilai', [NilaiController::class, 'index']);
     Route::get('/nilai/{nim}', [NilaiController::class, 'show']);
-    Route::post('/nilai', [NilaiController::class, 'store'])->middleware('iae.sso');
+    Route::post('/nilai', [NilaiController::class, 'store']);
 });

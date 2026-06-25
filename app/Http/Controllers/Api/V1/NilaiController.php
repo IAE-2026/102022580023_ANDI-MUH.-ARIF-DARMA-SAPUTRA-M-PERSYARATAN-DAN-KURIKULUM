@@ -5,20 +5,13 @@ namespace App\Http\Controllers\Api\V1;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Nilai;
-use App\Services\CentralMessagePublisher;
-use App\Services\SoapAuditClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 
 class NilaiController extends Controller
 {
-    public function __construct(
-        private readonly SoapAuditClient $soapAuditClient,
-        private readonly CentralMessagePublisher $messagePublisher
-    ) {}
     #[OA\Get(
         path: "/api/v1/nilai",
         summary: "Lihat daftar semua nilai",
@@ -180,10 +173,10 @@ class NilaiController extends Controller
     #[OA\Post(
         path: "/api/v1/nilai",
         summary: "Catat nilai mahasiswa setelah semester selesai",
-        description: "Menambahkan data nilai mahasiswa baru. Memerlukan Bearer JWT IAE SSO (role dosen/admin). Setelah tersimpan, transaksi diaudit via SOAP legacy dan disebarkan ke RabbitMQ sebagai event nilai.recorded.",
+        description: "Menambahkan data nilai mahasiswa baru.",
         operationId: "storeNilai",
         tags: ["Nilai"],
-        security: [["X-IAE-KEY" => []], ["bearerAuth" => []]],
+        security: [["X-IAE-KEY" => []]],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
@@ -214,8 +207,9 @@ class NilaiController extends Controller
                             properties: [
                                 new OA\Property(property: "id", type: "integer", example: 11),
                                 new OA\Property(property: "nim", type: "string", example: "102022580023"),
-                                new OA\Property(property: "receipt_number", type: "string", example: "IAE-LOG-2026-8891A7BC"),
-                                new OA\Property(property: "event_published", type: "boolean", example: true),
+                                new OA\Property(property: "kode_matkul", type: "string", example: "SI101"),
+                                new OA\Property(property: "nilai_huruf", type: "string", example: "A"),
+                                new OA\Property(property: "nilai_angka", type: "number", example: 4.0),
                             ]
                         ),
                         new OA\Property(
@@ -237,17 +231,7 @@ class NilaiController extends Controller
             ),
             new OA\Response(
                 response: 401,
-                description: "Unauthorized - API Key atau JWT tidak valid",
-                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
-            ),
-            new OA\Response(
-                response: 403,
-                description: "Forbidden - Role tidak diizinkan",
-                content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
-            ),
-            new OA\Response(
-                response: 502,
-                description: "Integrasi SOAP/RabbitMQ gagal",
+                description: "Unauthorized - API Key tidak valid",
                 content: new OA\JsonContent(ref: "#/components/schemas/IaeT2ErrorResponse")
             ),
         ]
@@ -298,8 +282,6 @@ class NilaiController extends Controller
             \Log::warning('Tidak dapat menghubungi Service A: ' . $e->getMessage());
         }
 
-        // Simpan data nilai
-        $iaeUser = $request->attributes->get('iae_user');
         $nilai = Nilai::create([
             ...$request->only([
                 'nim',
@@ -311,57 +293,9 @@ class NilaiController extends Controller
                 'semester',
                 'tahun_ajaran',
             ]),
-            'recorded_by' => $iaeUser?->email,
+            'recorded_by' => config('services.iae.api_nim'),
         ]);
 
-        try {
-            $auditPayload = [
-                'id' => $nilai->id,
-                'nim' => $nilai->nim,
-                'kode_matkul' => $nilai->kode_matkul,
-                'nama_matkul' => $nilai->nama_matkul,
-                'nilai_huruf' => $nilai->nilai_huruf,
-                'nilai_angka' => (float) $nilai->nilai_angka,
-                'sks' => $nilai->sks,
-                'semester' => $nilai->semester,
-                'tahun_ajaran' => $nilai->tahun_ajaran,
-                'recorded_by' => $nilai->recorded_by,
-                'team_id' => config('services.iae.team_id'),
-            ];
-
-            $receiptNumber = $this->soapAuditClient->submit($auditPayload);
-            $nilai->update(['receipt_number' => $receiptNumber]);
-
-            $this->messagePublisher->publish('nilai.recorded', [
-                'id' => $nilai->id,
-                'nim' => $nilai->nim,
-                'kode_matkul' => $nilai->kode_matkul,
-                'nama_matkul' => $nilai->nama_matkul,
-                'nilai_huruf' => $nilai->nilai_huruf,
-                'nilai_angka' => (float) $nilai->nilai_angka,
-                'sks' => $nilai->sks,
-                'semester' => $nilai->semester,
-                'tahun_ajaran' => $nilai->tahun_ajaran,
-                'recorded_by' => $nilai->recorded_by,
-                'receipt_number' => $receiptNumber,
-                'team_id' => config('services.iae.team_id'),
-            ]);
-        } catch (\Throwable $exception) {
-            Log::error('Integrasi IAE gagal setelah nilai tersimpan', [
-                'nilai_id' => $nilai->id,
-                'error' => $exception->getMessage(),
-            ]);
-
-            return ApiResponse::error(
-                'Nilai tersimpan, namun integrasi audit/RabbitMQ gagal: '.$exception->getMessage(),
-                502,
-                ['nilai_id' => $nilai->id]
-            );
-        }
-
-        return ApiResponse::success([
-            ...$nilai->fresh()->toArray(),
-            'event_published' => true,
-        ], 'Nilai mahasiswa berhasil dicatat', 201);
+        return ApiResponse::success($nilai, 'Nilai mahasiswa berhasil dicatat', 201);
     }
 }

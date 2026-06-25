@@ -53,8 +53,9 @@ return [
         'routes' => [
             /*
              * Route for accessing parsed swagger annotations.
+             * NOTE: Jangan pakai 'docs' karena bentrok dengan folder public/docs/ (openapi.json untuk scanner dosen).
              */
-            'docs' => 'docs',
+            'docs' => 'api/docs',
 
             /*
              * Route for Oauth2 authentication callback.
